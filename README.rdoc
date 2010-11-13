@@ -1,0 +1,7 @@
+= eppit
+
+EPP over HTTPS for NIC.it and maybe other registrars
+
+== Copyright
+
+Copyright (c) 2010 Daniele Orlandi. See LICENSE for details.
