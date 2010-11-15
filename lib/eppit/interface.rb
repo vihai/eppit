@@ -1,5 +1,4 @@
 require 'active_support/core_ext'
-require 'roxml'
 
 module Epp #:nodoc:
 

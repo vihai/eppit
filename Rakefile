@@ -12,6 +12,7 @@ begin
     gem.email = 'daniele@orlandi.com'
     gem.homepage = 'http://www.yggdra.it/'
     gem.authors = ['vihai']
+    gem.add_dependency('roxml', '>= 3.1.99')
     gem.files = FileList['[A-Z]*.*', '{lib}/**/*', 'VERSION']
     gem.test_files = FileList["spec/**/*"]
     gem.add_development_dependency 'rspec', '>= 2.1.0'

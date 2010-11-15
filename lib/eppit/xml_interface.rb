@@ -1,3 +1,5 @@
+require 'roxml'
+
 module Epp
   class MessageBase
     include ROXML
