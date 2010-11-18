@@ -1052,7 +1052,7 @@ module Epp #:nodoc:
         begin
           login if @status == :helloed
         rescue Epp::Session::ErrorResponse => e
-          if e.response_code == 2002 && e.reason_code == 4015
+          if e.response_code == 2002 && e.reason_code == 4014
             @status = :logged_in
             save_store
           else
@@ -1072,6 +1072,11 @@ module Epp #:nodoc:
       end
 
       if resp.msg.response.result.code >= 2000
+        if resp.msg == 2002 && e.reason_code == 4015
+          @status = :new
+          save_store
+        end
+
         raise Epp::Session::ErrorResponse.new(resp.msg)
       end
 
