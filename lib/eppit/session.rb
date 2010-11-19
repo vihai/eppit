@@ -447,7 +447,6 @@ module Epp #:nodoc:
                   host_attr.host_name = ns.name
 
                   ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
-
                   host_attr.host_addr = ipv4s.map { |addr|
                     Epp::Message::HostAttr::HostAddr.new do |host_addr|
                       host_addr.type = 'v4'
@@ -456,8 +455,7 @@ module Epp #:nodoc:
                   }
 
                   ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
-
-                  host_attr.host_addr = ipv6s.map { |addr|
+                  host_attr.host_addr += ipv6s.map { |addr|
                     Epp::Message::HostAttr::HostAddr.new do |host_addr|
                       host_addr.type = 'v6'
                       host_addr.address = addr
@@ -546,7 +544,7 @@ module Epp #:nodoc:
                     }
 
                     ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
-                    host_attr.host_addr = ipv6s.map { |addr|
+                    host_attr.host_addr += ipv6s.map { |addr|
                       Epp::Message::HostAttr::HostAddr.new do |host_addr|
                         host_addr.type = 'v6'
                         host_addr.address = addr
@@ -601,7 +599,6 @@ module Epp #:nodoc:
                     host_attr.host_name = ns.name
 
                     ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
-
                     host_attr.host_addr = ipv4s.map { |addr|
                       Epp::Message::HostAttr::HostAddr.new do |host_addr|
                         host_addr.type = 'v4'
@@ -610,8 +607,7 @@ module Epp #:nodoc:
                     }
 
                     ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
-
-                    host_attr.host_addr = ipv6s.map { |addr|
+                    host_attr.host_addr += ipv6s.map { |addr|
                       Epp::Message::HostAttr::HostAddr.new do |host_addr|
                         host_addr.type = 'v6'
                         host_addr.address = addr
