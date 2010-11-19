@@ -972,14 +972,14 @@ module Epp
           def initialize
             super
             @xmlns = 'http://www.nic.it/ITNIC-EPP/extdom-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extdom-1.0.xsd'
+            @schema_location = 'http://www.nic.it/ITNIC-EPP/extdom-1.0 extdom-1.0.xsd'
           end
 
-          xml_accessor :xmlns, :from => '@xmlns:extcon'
+          xml_accessor :xmlns, :from => '@xmlns:extdom'
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
-          xml_accessor :new_registrant, :from => 'extdom:newRegistrant'
-          xml_accessor :new_auth_info, :from => 'extdom:newAuthInfo', :as => NewAuthInfo
+          xml_accessor :new_registrant, :from => 'extdom:newRegistrant', :in => 'extdom:transferTrade'
+          xml_accessor :new_auth_info, :from => 'extdom:newAuthInfo', :as => NewAuthInfo, :in => 'extdom:transferTrade'
         end
 
         class RgpUpdate < MessageBase

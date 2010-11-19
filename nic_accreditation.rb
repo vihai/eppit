@@ -397,7 +397,7 @@ class NicAccredSession
     puts '@epp2.contact_create(hh100)'
     @epp2.contact_create(@hh100)
 
-    @epp2.domain_transfer_request(@hprefix + 'test-one.it', 'WWWtest-one', { :new_registrant => @hprefix + 'HH100', :new_auth_info => 'http-aa007'})
+    @epp2.domain_transfer_request(@hprefix + 'test-one.it', 'WWWtest-one', { :new_registrant => @hprefix + 'HH100', :new_auth_info_pw => 'http-aa007'})
 
     :ok
   end
