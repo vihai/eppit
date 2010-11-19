@@ -36,8 +36,8 @@ class NicAccredSession
                                 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
                                 'http://www.nic.it/ITNIC-EPP/extdom-1.0',
                                 'urn:ietf:params:xml:ns:rgp-1.0'],
-                :store_file => 'accred.store.dat',
-                :xml_log_file => 'accred.log.xml',
+                :store_file => 'tmp/accred.store.dat',
+                :xml_log_file => 'log/accred.log.xml',
                 :ca_file => @ca_file,
                 :session_handling => :disable)
 
@@ -53,8 +53,8 @@ class NicAccredSession
                                 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
                                 'http://www.nic.it/ITNIC-EPP/extdom-1.0',
                                 'urn:ietf:params:xml:ns:rgp-1.0'],
-                :store_file => 'accred1.store.dat',
-                :xml_log_file => 'accred1.log.xml',
+                :store_file => 'tmp/accred1.store.dat',
+                :xml_log_file => 'log/accred1.log.xml',
                 :ca_file => @ca_file,
                 :session_handling => :disable)
 
