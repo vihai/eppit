@@ -10,13 +10,15 @@ class NicAccredSession
   def initialize
     #@uri = 'https://epp-acc1.nic.it:443'
     @uri = 'https://pub-test.nic.it:443'
-    @tag = 'ULI-REG'
-    @tag2 = 'ULI1-REG'
-    @password = 'pippo9999'
-    @password2 = 'merda1'
+    @tag = 'REGISTRAR-REG'
+    @tag2 = 'REGISTRAR1-REG'
+    @password = 'pippo'
+    @new_password = 'pippo9999'
+    @password2 = 'pluto'
 
-    @hprefix = 'ulitest8-'
-    @devmode = true
+    @hprefix = 'reg-test1-'
+    @devmode =  true
+    @ca_file = '/etc/ssl/certs/bundle.ca'
 
     start
   end
@@ -36,7 +38,7 @@ class NicAccredSession
                                 'urn:ietf:params:xml:ns:rgp-1.0'],
                 :store_file => 'accred.store.dat',
                 :xml_log_file => 'accred.log.xml',
-                :ca_file => '/etc/ssl/certs/ca-certificates.crt',
+                :ca_file => @ca_file,
                 :session_handling => :disable)
 
     @epp2 = Epp::Session.new(
@@ -53,7 +55,7 @@ class NicAccredSession
                                 'urn:ietf:params:xml:ns:rgp-1.0'],
                 :store_file => 'accred1.store.dat',
                 :xml_log_file => 'accred1.log.xml',
-                :ca_file => '/etc/ssl/certs/ca-certificates.crt',
+                :ca_file => @ca_file,
                 :session_handling => :disable)
 
     @aa100=Epp::Contact.new
@@ -215,7 +217,7 @@ class NicAccredSession
 
     puts 'Login (with pw change)'
     begin
-      @epp.login(:newpw => 'pippo9999')
+      @epp.login(:newpw => @new_password)
     rescue Epp::Session::ErrorResponse => e
       puts "Ignoring error #{e}"
     end
@@ -271,6 +273,7 @@ class NicAccredSession
   end
 
   def test8
+    @aa100.voice = 'aaa'
     @aa100.snapshot
     @aa100.voice = '+39.050222222'
 
@@ -324,6 +327,7 @@ class NicAccredSession
   end
 
   def test14
+    @test1.registrant = 'aaa' 
     @test1.snapshot
     @test1.registrant = @hprefix + 'EE100'
     @test1.auth_info_pw = 'new-WWWtest-it'
@@ -369,6 +373,8 @@ class NicAccredSession
     puts "Acking ##{poll.msg.response.msgq.id}"
     @epp.ack poll.msg.response.msgq.id
 
+
+    # si aspetta un ack da epp1
     puts '@epp2.poll'
     poll = @epp2.poll
 
@@ -384,11 +390,12 @@ class NicAccredSession
   end
 
   def test18
+    @test1.auth_info_pw = 'aaa'
     @test1.snapshot
     @test1.auth_info_pw = 'B-1-test-09'
 
     puts '@epp2.domain_update(test1)'
-    @epp2.domain_update(test1)
+    @epp2.domain_update(@test1)
 
     :ok
   end
@@ -412,18 +419,19 @@ class NicAccredSession
     end
 
     puts "domain_transfer_approve('test-one.it', 'WWWtest-one')"
-    @epp.domain_transfer_approve(@hprefix + 'test-one.it', 'WWWtest-one')
+    @epp.domain_transfer_approve(@hprefix + 'test-one.it', :auth_info_pw => 'WWWtest-one')
 
     :ok
   end
 
   def test21
 
+    @testone.statuses = []
     @testone.snapshot
     @testone.statuses << 'domain:clientUpdateProhibited'
 
     puts '@epp2.domain_update(testone)'
-    @epp2.domain_update(testone)
+    @epp2.domain_update(@testone)
 
     puts "domain_info('test-one.it')"
     @epp2.domain_info(@hprefix + 'test-one.it')
@@ -503,10 +511,12 @@ class NicAccredSession
     puts "   @uri = #{@uri}"
     puts "   @tag = #{@tag}"
     puts "   @password = #{@password}"
+    puts "   @new_password = #{@new_password}"
     puts "   @tag2 = #{@tag2}"
     puts "   @password2 = #{@password2}"
     puts "   @devmode = #{@devmode}"
     puts "   @hprefix = #{@hprefix}"
+    puts "   @ca_file = #{@ca_file}"
     puts ''
     puts 'Available commands:'
     puts '  testX   : run test "X"'
