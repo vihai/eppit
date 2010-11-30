@@ -10,7 +10,7 @@ class ErrorResponse < StandardError #:nodoc:
 
   # Generic EPP exception. Accepts a response code and a message
   def initialize(epp_msg)
-    @response = epp_msg.response.result.msg
+    @response = epp_msg.response.result.msges['en']
     @response_code = epp_msg.response.result.code
     @reason = epp_msg.response.result.ext_value ? epp_msg.response.result.ext_value.reasons['en'] : nil
     @reason_code = epp_msg.response.result.ext_value ? epp_msg.response.result.ext_value.reason_code : nil

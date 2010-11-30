@@ -260,7 +260,7 @@ module Epp
             xml_namespaces NS
 
             xml_accessor :nationality_code, :from => 'extcon:nationalityCode'
-            xml_accessor :entity_type, :from => 'extcon:entityType'
+            xml_accessor :entity_type, :from => 'extcon:entityType', :as => Integer
             xml_accessor :reg_code, :from => 'extcon:regCode'
           end
 
@@ -273,7 +273,7 @@ module Epp
           xml_accessor :xmlns, :from => '@xmlns:extcon'
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
-          xml_accessor :consent_for_publishing, :from => 'extcon:consentForPublishing'
+          xml_accessor(:consent_for_publishing, :from => 'extcon:consentForPublishing') { |val| val == 'true' }
           xml_accessor :registrant, :from => 'extcon:registrant', :as => Registrant
         end
 
@@ -314,7 +314,7 @@ module Epp
           xml_accessor :xmlns, :from => '@xmlns'
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
-          xml_accessor :credit
+          xml_accessor :credit, :as => BigDecimal
         end
 
         class DelayedDebitAndRefundMsgData < MessageBase
@@ -332,8 +332,8 @@ module Epp
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name
-          xml_accessor :debit_date, :from => 'debitDate'
-          xml_accessor :amount
+          xml_accessor :debit_date, :from => 'debitDate', :as => DateTime
+          xml_accessor :amount, :as => BigDecimal
         end
 
         xml_accessor :passwd_reminder, :as => PasswdReminder, :from => 'extepp:passwdReminder'
@@ -423,7 +423,7 @@ module Epp
           xml_accessor :cr_date, :from => 'contact:crDate', :as => DateTime
           xml_accessor :up_id, :from => 'contact:upID'
           xml_accessor :up_date, :from => 'contact:upDate', :as => DateTime
-          
+
 #          xml_accessor :auth_info, :from => 'authInfo', :as => DomainAuthInfo
         end
 
@@ -524,8 +524,8 @@ module Epp
       class MsgQ < MessageBase
         xml_name 'msgq'
         xml_accessor :id, :from => '@id'
-        xml_accessor :count, :from => '@count'
-        xml_accessor :qdate, :from => 'qDate'
+        xml_accessor :count, :from => '@count', :as => Integer
+        xml_accessor :qdate, :from => 'qDate', :as => DateTime
         xml_accessor :msges, :as => { :key => '@lang', :value => :content }, :from => 'msg'
       end
 
@@ -697,7 +697,7 @@ module Epp
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name, :from => 'domain:name'
-          xml_accessor :period, :from => 'domain:period'
+          xml_accessor :period, :from => 'domain:period', :as => Integer
           xml_accessor :period_unit, :from => '@unit', :in => 'domain:period'
           xml_accessor :ns, :from => 'domain:hostAttr', :in => 'domain:ns', :as => [HostAttr]
           xml_accessor :registrant, :from => 'domain:registrant'
@@ -911,7 +911,7 @@ module Epp
             xml_namespaces NS
 
             xml_accessor :nationality_code, :from => 'extcon:nationalityCode'
-            xml_accessor :entity_type, :from => 'extcon:entityType'
+            xml_accessor :entity_type, :from => 'extcon:entityType', :as => Integer
             xml_accessor :reg_code, :from => 'extcon:regCode'
           end
 
@@ -924,7 +924,7 @@ module Epp
           xml_accessor :xmlns, :from => '@xmlns:extcon'
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
-          xml_accessor :consent_for_publishing, :from => 'extcon:consentForPublishing'
+          xml_accessor(:consent_for_publishing, :from => 'extcon:consentForPublishing') { |val| val == 'true' }
           xml_accessor :registrant, :from => 'extcon:registrant', :as => Registrant
         end
 
@@ -939,7 +939,7 @@ module Epp
             xml_namespaces NS
 
             xml_accessor :nationality_code, :from => 'extcon:nationalityCode'
-            xml_accessor :entity_type, :from => 'extcon:entityType'
+            xml_accessor :entity_type, :from => 'extcon:entityType', :as => Integer
             xml_accessor :reg_code, :from => 'extcon:regCode'
           end
 
@@ -952,7 +952,7 @@ module Epp
           xml_accessor :xmlns, :from => '@xmlns:extcon'
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
-          xml_accessor :consent_for_publishing, :from => 'extcon:consentForPublishing'
+          xml_accessor(:consent_for_publishing, :from => 'extcon:consentForPublishing') { |val| val == 'true' }
           xml_accessor :registrant, :from => 'extcon:registrant', :as => Registrant
         end
 
