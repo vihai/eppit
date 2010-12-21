@@ -264,8 +264,8 @@ module Epp #:nodoc:
 
                 chg.voice = contact.voice if contact.changed(:voice)
 #                contact_update.voice_x = ''
-                contact_update.fax = contact.fax if contact.changed(:fax)
-                contact_update.email = contact.email if contact.changed(:email)
+                chg.fax = contact.fax if contact.changed(:fax)
+                chg.email = contact.email if contact.changed(:email)
               end
               contact_update.chg = nil if contact_update.chg.to_xml.children.empty?
 
