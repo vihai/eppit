@@ -1042,6 +1042,8 @@ module Epp #:nodoc:
     # the request is made.
     def send_request(req, args = {})
 
+      yet_retried = false
+
       if @session_handling == :auto
         hello if @status == :new
 
@@ -1061,19 +1063,26 @@ module Epp #:nodoc:
 
       begin
         resp = send_request_raw(req)
+
+        if resp.msg.response.result.code >= 2000
+          raise Epp::Session::ErrorResponse.new(resp.msg)
+        end
       rescue EOFError, Errno::EPIPE
         disconnect
         connect
         retry
-      end
-
-      if resp.msg.response.result.code >= 2000
-        if resp.msg == 2002 && e.reason_code == 4015
+      rescue Epp::Session::ErrorResponse => e
+        if e.response_code == 2002 && e.reason_code == 4015
           @status = :new
           save_store
+
+          if !yet_retried
+            yet_retried = true
+            retry
+          end
         end
 
-        raise Epp::Session::ErrorResponse.new(resp.msg)
+        raise
       end
 
       return resp
