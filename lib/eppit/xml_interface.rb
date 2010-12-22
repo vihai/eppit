@@ -763,8 +763,8 @@ module Epp
 
           xml_accessor :id, :from => 'contact:id'
           xml_accessor :add, :from => 'contact:add', :as => Add
-          xml_accessor :chg, :from => 'contact:chg', :as => Chg
           xml_accessor :rem, :from => 'contact:rem', :as => Rem
+          xml_accessor :chg, :from => 'contact:chg', :as => Chg
         end
 
         class DomainUpdate < MessageBase
@@ -821,8 +821,8 @@ module Epp
 
           xml_accessor :name, :from => 'domain:name'
           xml_accessor :add, :from => 'domain:add', :as => Add
-          xml_accessor :chg, :from => 'domain:chg', :as => Chg
           xml_accessor :rem, :from => 'domain:rem', :as => Rem
+          xml_accessor :chg, :from => 'domain:chg', :as => Chg
         end
 
         xml_accessor :contact_update, :as => ContactUpdate, :from => 'contact:update'
