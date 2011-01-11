@@ -368,7 +368,7 @@ module Epp #:nodoc:
         epp.command = Epp::Message::Command.new do |command|
           command.info = Epp::Message::Command::Info.new do |info|
             info.domain_info = Epp::Message::Command::Info::DomainInfo.new do |domain_info|
-              domain_info.name = domain_name 
+              domain_info.name = domain_name
               domain_info.hosts = 'all'
 
               if opts[:auth_info_pw]
@@ -863,7 +863,7 @@ module Epp #:nodoc:
       resp
     end
 
-    def poll
+    def poll(opts = {})
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
           command.poll = Epp::Message::Command::Poll.new do |poll|
@@ -874,7 +874,7 @@ module Epp #:nodoc:
         end
       end
 
-      if @silence_empty_polls
+      if @silence_empty_polls || opts[:silence_empty]
         resp = nil
         xml_log = intercept_xml_log do
           begin
@@ -1037,7 +1037,7 @@ module Epp #:nodoc:
         req = req2
       end
 
-      log_xml_message(req, 'out', @cookies)
+      log_xml_message(req.to_s, 'out', @cookies)
 
       post = Net::HTTP::Post.new(@uri.path, { 'User-Agent' => 'Yggdra EPP Gateway/1.0' } )
       @cookies.each do |cookie|
@@ -1072,24 +1072,24 @@ module Epp #:nodoc:
 
       yet_retried = false
 
-      if @session_handling == :auto
-        hello if @status == :new
-
-        begin
-          login if @status == :helloed
-        rescue Epp::Session::ErrorResponse => e
-          if e.response_code == 2002 && e.reason_code == 4014
-            @status = :logged_in
-            save_store
-          else
-            raise
-          end
-        end
-      elsif @session_handling == :manual
-        raise "send_request not valid in state #{@status}" if @status != :logged_in
-      end
-
       begin
+        if @session_handling == :auto
+          hello if @status == :new
+
+          begin
+            login if @status == :helloed
+          rescue Epp::Session::ErrorResponse => e
+            if e.response_code == 2002 && e.reason_code == 4014
+              @status = :logged_in
+              save_store
+            else
+              raise
+            end
+          end
+        elsif @session_handling == :manual
+          raise "send_request not valid in state #{@status}" if @status != :logged_in
+        end
+
         resp = send_request_raw(req)
 
         if resp.msg.response.result.code >= 2000
