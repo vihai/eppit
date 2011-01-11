@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'logger'
-require 'eppit'
-
 require 'irb'
+require File.expand_path('../lib/eppit.rb', __FILE__)
 
 class NicAccredSession
 
@@ -18,7 +17,7 @@ class NicAccredSession
 
     @hprefix = 'reg-test1-'
     @devmode =  true
-    @ca_file = '/etc/ssl/certs/bundle.ca'
+    @ca_file = '/etc/ssl/certs/ca-certificates.crt'
 
     start
   end
