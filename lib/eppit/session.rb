@@ -42,6 +42,7 @@ module Epp #:nodoc:
     # * <tt>:xml_log_file</tt> - Filename in which to save XML maessages
     # * <tt>:clid_prefix</tt> - Prefix used to generate client transaction ID
     # * <tt>:session_handling</tt> - Session handling method: :auto, :manual, :disable
+    # * <tt>:silence_empty_polls</tt> - Silence Empty Pools, avoids logging poll commands resulting in "no message in queue"
     #
     def initialize(attributes = {})
       requires!(attributes, :uri, :tag, :password)
@@ -60,6 +61,10 @@ module Epp #:nodoc:
       @xml_log_file = attributes[:xml_log_file]
       @clid_prefix = attributes[:clid_prefix] || (@tag + '-')
       @session_handling = attributes[:session_handling] || :auto
+      @silence_empty_polls = attributes[:silence_empty_polls] || false
+      @debug_http = attributes[:debug_http] || false
+
+      @xml_log_buffer = nil
 
       @ns = { 'xmlns' => 'urn:ietf:params:xml:ns:epp-1.0',
               'domain' => 'urn:ietf:params:xml:ns:domain-1.0',
@@ -73,20 +78,24 @@ module Epp #:nodoc:
         @http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       end
 
-      # @http.set_debug_output($stderr)
+      @http.set_debug_output($stderr) if @debug_http
 
       @status = :unknown
 
       load_store
     end
 
-    def silence_xml_log
-      xml_log_tmp = @xml_log_file
-      @xml_log_file = nil
+    def intercept_xml_log
+      @xml_log_buffer = ''
 
-      yield
+      begin
+        yield
+      ensure
+        buf = @xml_log_buffer
+        @xml_log_buffer = nil
+      end
 
-      @xml_log_file = xml_log_tmp
+      buf
     end
 
     def contact_check(contacts)
@@ -865,7 +874,26 @@ module Epp #:nodoc:
         end
       end
 
-      resp = send_request(req)
+      if @silence_empty_polls
+        resp = nil
+        xml_log = intercept_xml_log do
+          begin
+            resp = send_request(req)
+          rescue
+            # Output log especially in case of exception
+            File.open(@xml_log_file, 'ab') { |f| f << @xml_log_buffer }
+            raise
+          end
+        end
+
+        if resp.msg.response.msgq
+          File.open(@xml_log_file, 'ab') { |f| f << xml_log }
+        end
+      else
+        resp = send_request(req)
+      end
+
+      resp
     end
 
     def ack(message_id)
@@ -1009,7 +1037,7 @@ module Epp #:nodoc:
         req = req2
       end
 
-      dump_message(req, 'out', @cookies)
+      log_xml_message(req, 'out', @cookies)
 
       post = Net::HTTP::Post.new(@uri.path, { 'User-Agent' => 'Yggdra EPP Gateway/1.0' } )
       @cookies.each do |cookie|
@@ -1020,7 +1048,7 @@ module Epp #:nodoc:
 
       http_response = @http.request(post)
 
-      dump_message(http_response.body, 'in', @cookies)
+      log_xml_message(http_response.body, 'in', @cookies)
 
       if http_response['Set-Cookie']
         new_cookies = http_response.get_fields('Set-Cookie')
@@ -1121,13 +1149,17 @@ module Epp #:nodoc:
       end
     end
 
-    def dump_message(msg, direction, sid)
-      if @xml_log_file
-        File.open(@xml_log_file, 'ab') do |f|
-          f << "\n<!-- #{Time.now.to_s} #{direction.upcase} #{sid} ==================== -->\n"
-          f << msg
-          f << "\n<!-- END -->\n"
-        end
+    def log_xml_message(msg, direction, sid)
+
+      m = ''
+      m << "\n<!-- #{Time.now.to_s} #{direction.upcase} #{sid} ==================== -->\n"
+      m << msg
+      m << "\n<!-- END -->\n"
+
+      if @xml_log_buffer
+        @xml_log_buffer << m
+      elsif @xml_log_file
+        File.open(@xml_log_file, 'ab') { |f| f << m }
       end
     end
 
