@@ -142,7 +142,7 @@ module Epp #:nodoc:
 
       resp = send_request(req)
 
-      resp.object = Epp::Contact.new(
+      resp.object = OpenStruct.new(
         :nic_id => resp.msg.response.res_data.contact_inf_data.id,
         :roid => resp.msg.response.res_data.contact_inf_data.roid,
         :statuses => resp.msg.response.res_data.contact_inf_data.statuses.map { |x| x.s },
@@ -178,6 +178,11 @@ module Epp #:nodoc:
     end
 
     def contact_create(contact)
+
+      if contact.kind_of?(Hash)
+        contact = OpenStruct.new(contact)
+      end
+
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
           command.create = Epp::Message::Command::Create.new do |create|
@@ -233,22 +238,58 @@ module Epp #:nodoc:
       resp
     end
 
-    def contact_update(contact)
+    def contact_update_make_diff(old_contact, new_contact)
+      diff = OpenStruct.new
+
+      diff.add = OpenStruct.new
+      diff.add.statuses = (new_contact.statuses - old_contact.statuses)
+
+      diff.rem = OpenStruct.new
+      diff.rem.statuses = (old_contact.statuses - new_contact.statuses)
+
+      diff.chg = OpenStruct.new
+      diff.chg.name = new_contact.name if old_contact.name != contact.name
+      diff.chg.org = new_contact.org if old_contact.org != new_contact.org
+      diff.chg.street = new_contact.street if old_contact.street != new_contact.street
+      diff.chg.sp = new_contact.sp if old_contact.sp != new_contact.sp
+      diff.chg.pc = new_contact.pc if old_contact.pc != new_contact.pc
+      diff.chg.cc = new_contact.cc if old_contact.cc != new_contact.cc
+      diff.chg.voice = new_contact.voice if old_contact.voice != new_contact.voice
+      diff.chg.fax = new_contact.fax if old_contact.fax != new_contact.fax
+      diff.chg.email = new_contact.email if old_contact.email != new_contact.email
+      diff.chg.consent_for_publishing = new_contact.consent_for_publishing if old_contact.consent_for_publishing != new_contact.consent_for_publishing
+      diff.chg.registrant_nationality_code = new_contact.registrant_nationality_code if old_contact.registrant_nationality_code != new_contact.registrant_nationality_code
+      diff.chg.entity_type = new_contact.entity_type if old_contact.entity_type != new_contact.entity_type
+      diff.chg.reg_code = new_contact.reg_code if old_contact.reg_code != new_contact.reg_code
+
+      diff
+    end
+
+    def contact_update_with_old(old_contact, new_contact)
+      contact_update(old_contact.nic_id, contact_update_make_diff(old_contact, new_contact))
+    end
+
+    def contact_update(nic_id, diff)
+
+      diff = OpenStruct.new(diff) if diff.kind_of?(Hash)
+      diff.add = OpenStruct.new(diff.add) if diff.add.kind_of?(Hash)
+      diff.chg = OpenStruct.new(diff.chg) if diff.chg.kind_of?(Hash)
+      diff.rem = OpenStruct.new(diff.rem) if diff.rem.kind_of?(Hash)
+
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
           command.update = Epp::Message::Command::Update.new do |update|
             update.contact_update = Epp::Message::Command::Update::ContactUpdate.new do |contact_update|
-              contact_update.id = contact.nic_id
+              contact_update.id = nic_id
 
               # Add
               contact_update.add = Epp::Message::Command::Update::ContactUpdate::Add.new do |add|
-                add.statuses = (contact.statuses - contact.orig.statuses).map { |x|
+                add.statuses = diff.add ? diff.add.statuses.map { |x|
                   Epp::Message::Command::Update::ContactUpdate::Status.new do |status|
                     status.s = x
                     status.lang = 'en'
                   end
-                }
-                add.statuses = nil if add.statuses.empty?
+                } : nil
               end
               contact_update.add = nil if contact_update.add.to_xml.children.empty?
 
@@ -257,56 +298,55 @@ module Epp #:nodoc:
 
                 chg.postal_info = Epp::Message::Command::Update::ContactUpdate::Chg::PostalInfo.new do |postal_info|
                   postal_info.type = 'loc'
-                  postal_info.name = contact.name if contact.changed(:name)
-                  postal_info.org = contact.org if contact.changed(:org)
+                  postal_info.name = diff.chg.name
+                  postal_info.org = diff.chg.org
 
                   postal_info.addr = Epp::Message::Command::Update::ContactUpdate::Chg::PostalInfo::Addr.new do |addr|
-                    addr.street = contact.street if contact.changed(:street)
-                    addr.city = contact.city if contact.changed(:city)
-                    addr.sp = contact.sp if contact.changed(:sp)
-                    addr.pc = contact.pc if contact.changed(:pc)
-                    addr.cc = contact.cc if contact.changed(:cc)
+                    addr.street = diff.chg.street
+                    addr.city = diff.chg.city
+                    addr.sp = diff.chg.sp
+                    addr.pc = diff.chg.pc
+                    addr.cc = diff.chg.cc
                   end
                   postal_info.addr = nil if postal_info.addr.to_xml.children.empty?
                 end
                 chg.postal_info = nil if chg.postal_info.to_xml.children.empty?
 
-                chg.voice = contact.voice if contact.changed(:voice)
+                chg.voice = diff.chg.voice
 #                contact_update.voice_x = ''
-                chg.fax = contact.fax if contact.changed(:fax)
-                chg.email = contact.email if contact.changed(:email)
+                chg.fax = diff.chg.fax
+                chg.email = diff.chg.email
               end
               contact_update.chg = nil if contact_update.chg.to_xml.children.empty?
 
               # Rem
               contact_update.rem =  Epp::Message::Command::Update::ContactUpdate::Rem.new do |rem|
-                rem.statuses = (contact.orig.statuses - contact.statuses).map { |x|
+                rem.statuses = diff.rem ? diff.rem.statuses.map { |x|
                   Epp::Message::Command::Update::ContactUpdate::Status.new do |status|
                     status.s = x
                     status.lang = 'en'
                   end
-                }
-                rem.statuses = nil if rem.statuses.empty?
+                } : nil
               end
               contact_update.rem = nil if contact_update.rem.to_xml.children.empty?
             end
           end
 
-          if contact.changed(:consent_for_publishing) ||
-             contact.changed(:registrant_entity_type) ||
-             contact.changed(:registrant_nationality_code) ||
-             contact.changed(:registrant_reg_code)
+          if diff.consent_for_publishing ||
+             diff.registrant_entity_type ||
+             diff.registrant_nationality_code ||
+             diff.registrant_reg_code
             command.extension = Epp::Message::Command::Extension.new do |extension|
               extension.extcon_update = Epp::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
-                extcon_update.consent_for_publishing = contact.consent_for_publishing
+                extcon_update.consent_for_publishing = diff.consent_for_publishing
 
-                if contact.changed(:registrant_entity_type) ||
-                   contact.changed(:registrant_nationality_code) ||
-                   contact.changed(:registrant_reg_code)
+                if diff.registrant_entity_type ||
+                   diff.registrant_nationality_code ||
+                   diff.registrant_reg_code
                   extcon_update.registrant =  Epp::Message::Command::Extension::ExtconUpdate::Registrant.new do |registrant|
-                    registrant.nationality_code = contact.registrant_nationality_code if contact.changed(:registrant_nationality_code)
-                    registrant.entity_type = contact.registrant_entity_type if contact.changed(:registrant_entity_type)
-                    registrant.reg_code = contact.registrant_reg_code if contact.changed(:registrant_reg_code)
+                    registrant.nationality_code = diff.registrant_nationality_code
+                    registrant.entity_type = diff.registrant_entity_type
+                    registrant.reg_code = diff.registrant_reg_code
                   end
                 end
               end
@@ -387,7 +427,7 @@ module Epp #:nodoc:
 
       epp_resp = resp.msg
 
-      domain = Domain.new
+      domain = OpenStruct.new
       domain.name = epp_resp.response.res_data.domain_inf_data.name
       domain.roid = epp_resp.response.res_data.domain_inf_data.roid
 
@@ -399,11 +439,11 @@ module Epp #:nodoc:
       domain.tech_contacts = epp_resp.response.res_data.domain_inf_data.contacts.select { |x| x.type == 'tech' }.map { |x| x.id }
 
       domain.nameservers = epp_resp.response.res_data.domain_inf_data.ns.map { |x|
-          Domain::NameServer.new(:name => x.host_name,
-                                 :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
-                                                      map { |host_addr| host_addr.address },
-                                 :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
-                                                      map { |host_addr| host_addr.address })
+          OpenStruct.new(:name => x.host_name,
+                         :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
+                                              map { |host_addr| host_addr.address },
+                         :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
+                                              map { |host_addr| host_addr.address })
       }
 
       domain.cl_id = epp_resp.response.res_data.domain_inf_data.cl_id
@@ -426,11 +466,11 @@ module Epp #:nodoc:
 
         if epp_resp.response.extension.inf_ns_to_validate_data
           domain.nameservers_to_validate = epp_resp.response.extension.inf_ns_to_validate_data.ns_to_validate.map { |x|
-            Domain::NameServer.new(:name => x.host_name,
-                                   :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
-                                                        map { |host_addr| host_addr.address },
-                                   :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
-                                                        map { |host_addr| host_addr.address })
+            OpenStruct.new(:name => x.host_name,
+                           :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
+                                                map { |host_addr| host_addr.address },
+                           :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
+                                                map { |host_addr| host_addr.address })
             }
         end
       end
@@ -443,6 +483,11 @@ module Epp #:nodoc:
     end
 
     def domain_create(domain)
+
+      if domain.kind_of?(Hash)
+        domain = OpenStruct.new(domain)
+      end
+
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
           command.create = Epp::Message::Command::Create.new do |create|
@@ -454,22 +499,27 @@ module Epp #:nodoc:
                 Epp::Message::HostAttr.new do |host_attr|
 
                   host_attr.host_name = ns.name
+                  host_attr.host_addr = []
 
-                  ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
-                  host_attr.host_addr = ipv4s.map { |addr|
-                    Epp::Message::HostAttr::HostAddr.new do |host_addr|
-                      host_addr.type = 'v4'
-                      host_addr.address = addr
-                    end
-                  }
+                  if ns.ipv4
+                    ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
+                    host_attr.host_addr += ipv4s.map { |addr|
+                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                        host_addr.type = 'v4'
+                        host_addr.address = addr
+                      end
+                    }
+                  end
 
-                  ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
-                  host_attr.host_addr += ipv6s.map { |addr|
-                    Epp::Message::HostAttr::HostAddr.new do |host_addr|
-                      host_addr.type = 'v6'
-                      host_addr.address = addr
-                    end
-                  }
+                  if ns.ipv6
+                    ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
+                    host_attr.host_addr += ipv6s.map { |addr|
+                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                        host_addr.type = 'v6'
+                        host_addr.address = addr
+                      end
+                    }
+                 end
                 end
               }
 
@@ -506,131 +556,198 @@ module Epp #:nodoc:
       resp
     end
 
-    def domain_update(domain)
+    def domain_update_with_old(old_domain, new_domain)
+      domain_update(old_domain.name, domain_update_make_diff(old_domain, new_domain))
+    end
+
+    def domain_update_make_diff(old_domain, new_domain)
+      diff = OpenStruct.new
+
+      diff.add = OpenStruct.new
+      diff.add.admin_contacts = (new_domain.admin_contacts - old_domain.admin_contacts)
+      diff.add.tech_contacts = (new_domain.tech_contacts - old_domain.tech_contacts)
+      diff.add.statuses = (new_domain.statuses - old_domain.statuses)
+      diff.add.nameservers = (new_domain.nameservers - old_domain.nameservers)
+
+      diff.chg = OpenStruct.new
+      diff.chg.registrant = new_domain.registrant if new_domain.registrant != old_domain.registrant
+      diff.chg.auth_info_pw = new_domain.auth_info_pw if new_domain.auth_info_pw != old_domain.auth_info_pw
+
+      diff.rem = OpenStruct.new
+      diff.rem.admin_contacts = (old_domain.admin_contacts - new_domain.admin_contacts)
+      diff.rem.tech_contacts = (old_domain.tech_contacts - new_domain.tech_contacts)
+      diff.rem.statuses = (old_domain.statuses - new_domain.statuses)
+      diff.rem.nameservers = (old_domain.nameservers - new_domain.nameservers)
+
+#              domain_statuses = domain.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
+#              domain_orig_statuses = domain.orig.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
+
+      diff
+    end
+
+
+    def domain_update(domain_name, diff)
+
+      diff = OpenStruct.new(diff) if diff.kind_of?(Hash)
+      diff.add = OpenStruct.new(diff.add) if diff.add.kind_of?(Hash)
+      diff.chg = OpenStruct.new(diff.chg) if diff.chg.kind_of?(Hash)
+      diff.rem = OpenStruct.new(diff.rem) if diff.rem.kind_of?(Hash)
+
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
           command.update = Epp::Message::Command::Update.new do |update|
             update.domain_update = Epp::Message::Command::Update::DomainUpdate.new do |domain_update|
-              domain_update.name = domain.name
-
-              domain_statuses = domain.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
-              domain_orig_statuses = domain.orig.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
+              domain_update.name = domain_name
 
               # Add
-              domain_update.add = Epp::Message::Command::Update::DomainUpdate::Add.new do |add|
+              if diff.add
 
-                add.contacts = (domain.admin_contacts - domain.orig.admin_contacts).map { |c|
-                  Epp::Message::Contact.new do |contact|
-                    contact.type = 'admin'
-                    contact.id = c
-                  end
-                } + (domain.tech_contacts - domain.orig.tech_contacts).map { |c|
-                  Epp::Message::Contact.new do |contact|
-                    contact.type = 'tech'
-                    contact.id = c
-                  end
-                }
+                diff.add.admin_contacts ||= []
+                diff.add.tech_contacts ||= []
+                diff.add.statuses ||= []
+                diff.add.nameservers ||= []
 
-                add.statuses = (domain_statuses - domain_orig_statuses).map { |x|
-                  Epp::Message::Command::Update::DomainUpdate::Status.new do |status|
-                    status.s = x
-                    status.lang = 'en'
-                  end
-                }
-                add.statuses = nil if add.statuses.empty?
+                domain_update.add = Epp::Message::Command::Update::DomainUpdate::Add.new do |add|
 
-                add.ns = (domain.nameservers - domain.orig.nameservers).map { |ns|
-                  Epp::Message::HostAttr.new do |host_attr|
+                  add.contacts = diff.add.admin_contacts.map { |c|
+                    Epp::Message::Contact.new do |contact|
+                      contact.type = 'admin'
+                      contact.id = c
+                    end
+                  } + diff.add.tech_contacts.map { |c|
+                    Epp::Message::Contact.new do |contact|
+                      contact.type = 'tech'
+                      contact.id = c
+                    end
+                  }
 
-                    host_attr.host_name = ns.name
+                  add.statuses = diff.add.statuses.map { |x|
+                    Epp::Message::Command::Update::DomainUpdate::Status.new do |status|
+                      status.s = x
+                      status.lang = 'en'
+                    end
+                  }
+                  add.statuses = nil if add.statuses.empty?
 
-                    ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
-                    host_attr.host_addr = ipv4s.map { |addr|
-                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
-                        host_addr.type = 'v4'
-                        host_addr.address = addr
+                  add.ns = diff.add.nameservers.map { |ns|
+                    ns = OpenStruct.new(ns) if ns.kind_of?(Hash)
+
+                    Epp::Message::HostAttr.new do |host_attr|
+
+                      host_attr.host_name = ns.name
+                      host_attr.host_addr = []
+
+                      if ns.ipv4
+                        ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
+                        host_attr.host_addr += ipv4s.map { |addr|
+                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                            host_addr.type = 'v4'
+                            host_addr.address = addr
+                          end
+                        }
                       end
-                    }
 
-                    ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
-                    host_attr.host_addr += ipv6s.map { |addr|
-                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
-                        host_addr.type = 'v6'
-                        host_addr.address = addr
+                      if ns.ipv6
+                        ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
+                        host_attr.host_addr += ipv6s.map { |addr|
+                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                            host_addr.type = 'v6'
+                            host_addr.address = addr
+                          end
+                        }
                       end
-                    }
-                  end
-                }
-                add.ns = nil if add.ns.empty?
+                    end
+                  }
+                  add.ns = nil if add.ns.empty?
 
+                end
+                domain_update.add = nil if domain_update.add.to_xml.children.empty?
               end
-              domain_update.add = nil if domain_update.add.to_xml.children.empty?
 
               # Chg
-              domain_update.chg =  Epp::Message::Command::Update::DomainUpdate::Chg.new do |chg|
+              if diff.chg
+                domain_update.chg =  Epp::Message::Command::Update::DomainUpdate::Chg.new do |chg|
 
-                chg.registrant = domain.registrant if domain.changed(:registrant)
+                  chg.registrant = diff.chg.registrant
 
-                if domain.changed(:auth_info_pw)
-                  chg.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
-                    auth_info.pw = domain.auth_info_pw
+                  if diff.auth_info_pw
+                    chg.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+                      auth_info.pw = diff.auth_info_pw
+                    end
                   end
                 end
+                domain_update.chg = nil if domain_update.chg.to_xml.children.empty?
               end
-              domain_update.chg = nil if domain_update.chg.to_xml.children.empty?
 
               # Rem
-              domain_update.rem =  Epp::Message::Command::Update::DomainUpdate::Rem.new do |rem|
+              if diff.rem
 
-               rem.contacts = (domain.orig.admin_contacts - domain.admin_contacts).map { |c|
-                  Epp::Message::Contact.new do |contact|
-                    contact.type = 'admin'
-                    contact.id = c
-                  end
-                } + (domain.orig.tech_contacts - domain.tech_contacts).map { |c|
-                  Epp::Message::Contact.new do |contact|
-                    contact.type = 'tech'
-                    contact.id = c
-                  end
-                }
+                diff.rem.admin_contacts ||= []
+                diff.rem.tech_contacts ||= []
+                diff.rem.statuses ||= []
+                diff.rem.nameservers ||= []
 
-                rem.statuses = (domain_orig_statuses - domain_statuses).map { |x|
-                  Epp::Message::Command::Update::DomainUpdate::Status.new do |status|
-                    status.s = x
-                    status.lang = 'en'
-                  end
-                }
-                rem.statuses = nil if rem.statuses.empty?
+                domain_update.rem =  Epp::Message::Command::Update::DomainUpdate::Rem.new do |rem|
 
-                rem.ns = (domain.orig.nameservers - domain.nameservers).map { |ns|
-                  Epp::Message::HostAttr.new do |host_attr|
+                 rem.contacts = diff.rem.admin_contacts.map { |c|
+                    Epp::Message::Contact.new do |contact|
+                      contact.type = 'admin'
+                      contact.id = c
+                    end
+                  } + diff.rem.tech_contacts.map { |c|
+                    Epp::Message::Contact.new do |contact|
+                      contact.type = 'tech'
+                      contact.id = c
+                    end
+                  }
+                  rem.contacts = nil if rem.contacts.empty?
 
-                    host_attr.host_name = ns.name
+                  rem.statuses = diff.rem.statuses.map { |x|
+                    Epp::Message::Command::Update::DomainUpdate::Status.new do |status|
+                      status.s = x
+                      status.lang = 'en'
+                    end
+                  }
+                  rem.statuses = nil if rem.statuses.empty?
 
-                    ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
-                    host_attr.host_addr = ipv4s.map { |addr|
-                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
-                        host_addr.type = 'v4'
-                        host_addr.address = addr
+                  rem.ns = diff.rem.nameservers.map { |ns|
+                    ns = OpenStruct.new(ns) if ns.kind_of?(Hash)
+
+                    Epp::Message::HostAttr.new do |host_attr|
+
+                      host_attr.host_name = ns.name
+                      host_attr.host_addr = []
+
+                      if ns.ipv4
+                        ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
+                        host_attr.host_addr = ipv4s.map { |addr|
+                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                            host_addr.type = 'v4'
+                            host_addr.address = addr
+                          end
+                        }
                       end
-                    }
 
-                    ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
-                    host_attr.host_addr += ipv6s.map { |addr|
-                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
-                        host_addr.type = 'v6'
-                        host_addr.address = addr
+                      if ns.ipv6
+                        ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
+                        host_attr.host_addr += ipv6s.map { |addr|
+                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                            host_addr.type = 'v6'
+                            host_addr.address = addr
+                          end
+                        }
                       end
-                    }
-                  end
-                }
-                rem.ns = nil if rem.ns.empty?
+                    end
+                  }
+                  rem.ns = nil if rem.ns.empty?
+                end
+                domain_update.rem = nil if domain_update.rem.to_xml.children.empty?
               end
-              domain_update.rem = nil if domain_update.rem.to_xml.children.empty?
+
             end
           end
 
-          if domain.changed(:consent_for_publishing)
+          if diff.consent_for_publishing
             command.extension = Epp::Message::Command::Extension.new do |extension|
               extension.extcon_update = Epp::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
                 extcon_update.consent_for_publishing = domain.consent_for_publishing
