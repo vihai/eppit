@@ -7,7 +7,6 @@ require 'uri'
 
 # Package files
 require File.dirname(__FILE__) + '/require_parameters.rb'
-require File.dirname(__FILE__) + '/eppit/interface.rb'
 require File.dirname(__FILE__) + '/eppit/session.rb'
 require File.dirname(__FILE__) + '/eppit/exceptions.rb'
 require File.dirname(__FILE__) + '/eppit/xml_interface.rb'
