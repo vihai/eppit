@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{eppit}
-  s.version = "0.8.7"
+  s.version = "0.9.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["vihai"]
-  s.date = %q{2011-01-11}
+  s.date = %q{2011-01-13}
   s.description = %q{EPP over HTTPS protocol implementation developed for NIC.it}
   s.email = %q{daniele@orlandi.com}
   s.extra_rdoc_files = [
@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/eppit.rb",
     "lib/eppit/exceptions.rb",
-    "lib/eppit/interface.rb",
     "lib/eppit/session.rb",
     "lib/eppit/xml_interface.rb",
     "lib/require_parameters.rb"
