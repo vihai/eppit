@@ -786,9 +786,9 @@ module Epp
             xml_name 'add'
             xml_namespace :contact
 
+            xml_accessor :ns, :from => 'domain:hostAttr', :in => 'domain:ns', :as => [HostAttr]
             xml_accessor :contacts, :from => 'domain:contact', :as => [Contact]
             xml_accessor :statuses, :from => 'domain:status', :as => [Status]
-            xml_accessor :ns, :from => 'domain:hostAttr', :in => 'domain:ns', :as => [HostAttr]
           end
 
           class Chg < MessageBase
@@ -804,9 +804,9 @@ module Epp
             xml_name 'rem'
             xml_namespace :contact
 
+            xml_accessor :ns, :from => 'domain:hostAttr', :in => 'domain:ns', :as => [HostAttr]
             xml_accessor :contacts, :from => 'domain:contact', :as => [Contact]
             xml_accessor :statuses, :from => 'domain:status', :as => [Status]
-            xml_accessor :ns, :from => 'domain:hostAttr', :in => 'domain:ns', :as => [HostAttr]
           end
 
           def initialize
