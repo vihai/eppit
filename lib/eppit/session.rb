@@ -567,7 +567,7 @@ module Epp #:nodoc:
       diff.add.admin_contacts = (new_domain.admin_contacts - old_domain.admin_contacts)
       diff.add.tech_contacts = (new_domain.tech_contacts - old_domain.tech_contacts)
       diff.add.statuses = (new_domain.statuses - old_domain.statuses)
-      diff.add.nameservers = (new_domain.nameservers - old_domain.nameservers)
+      diff.add.nameservers = (new_domain.nameservers.map { |x| x.to_h } - old_domain.nameservers.map { |x| x.to_h })
 
       diff.chg = OpenStruct.new
       diff.chg.registrant = new_domain.registrant if new_domain.registrant != old_domain.registrant
@@ -577,7 +577,7 @@ module Epp #:nodoc:
       diff.rem.admin_contacts = (old_domain.admin_contacts - new_domain.admin_contacts)
       diff.rem.tech_contacts = (old_domain.tech_contacts - new_domain.tech_contacts)
       diff.rem.statuses = (old_domain.statuses - new_domain.statuses)
-      diff.rem.nameservers = (old_domain.nameservers - new_domain.nameservers)
+      diff.rem.nameservers = (old_domain.nameservers.map { |x| x.to_h } - new_domain.nameservers.map { |x| x.to_h })
 
 #              domain_statuses = domain.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
 #              domain_orig_statuses = domain.orig.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
@@ -670,9 +670,9 @@ module Epp #:nodoc:
 
                   chg.registrant = diff.chg.registrant
 
-                  if diff.auth_info_pw
+                  if diff.chg.auth_info_pw
                     chg.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
-                      auth_info.pw = diff.auth_info_pw
+                      auth_info.pw = diff.chg.auth_info_pw
                     end
                   end
                 end
