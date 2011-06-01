@@ -248,7 +248,7 @@ module Epp #:nodoc:
       diff.rem.statuses = (old_contact.statuses - new_contact.statuses)
 
       diff.chg = OpenStruct.new
-      diff.chg.name = new_contact.name if old_contact.name != contact.name
+      diff.chg.name = new_contact.name if old_contact.name != new_contact.name
       diff.chg.org = new_contact.org if old_contact.org != new_contact.org
       diff.chg.street = new_contact.street if old_contact.street != new_contact.street
       diff.chg.sp = new_contact.sp if old_contact.sp != new_contact.sp
