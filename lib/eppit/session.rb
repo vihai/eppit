@@ -250,10 +250,16 @@ module Epp #:nodoc:
       diff.chg = OpenStruct.new
       diff.chg.name = new_contact.name if old_contact.name != new_contact.name
       diff.chg.org = new_contact.org if old_contact.org != new_contact.org
-      diff.chg.street = new_contact.street if old_contact.street != new_contact.street
-      diff.chg.sp = new_contact.sp if old_contact.sp != new_contact.sp
-      diff.chg.pc = new_contact.pc if old_contact.pc != new_contact.pc
-      diff.chg.cc = new_contact.cc if old_contact.cc != new_contact.cc
+
+      if old_contact.street != new_contact.street || old_contact.sp != new_contact.sp ||
+         old_contact.sp != new_contact.city || old_contact.pc != new_contact.pc || old_contact.cc != new_contact.cc
+        diff.chg.street = new_contact.street
+        diff.chg.sp = new_contact.sp
+        diff.chg.city = new_contact.city
+        diff.chg.pc = new_contact.pc
+        diff.chg.cc = new_contact.cc
+      end
+
       diff.chg.voice = new_contact.voice if old_contact.voice != new_contact.voice
       diff.chg.fax = new_contact.fax if old_contact.fax != new_contact.fax
       diff.chg.email = new_contact.email if old_contact.email != new_contact.email
