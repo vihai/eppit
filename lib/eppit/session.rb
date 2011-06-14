@@ -577,7 +577,7 @@ module Epp #:nodoc:
 
       diff.chg = OpenStruct.new
       diff.chg.registrant = new_domain.registrant if new_domain.registrant != old_domain.registrant
-      diff.chg.auth_info_pw = new_domain.auth_info_pw if new_domain.auth_info_pw != old_domain.auth_info_pw
+      diff.chg.auth_info_pw = new_domain.auth_info_pw if new_domain.auth_info_pw != old_domain.auth_info_pw || new_domain.registrant != old_domain.registrant
 
       diff.rem = OpenStruct.new
       diff.rem.admin_contacts = (old_domain.admin_contacts - new_domain.admin_contacts)
