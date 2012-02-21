@@ -1,7 +1,7 @@
 
 require 'uuidtools'
 
-module Epp #:nodoc:
+module Eppit #:nodoc:
 
   class Response
     attr_accessor :msg
@@ -10,7 +10,7 @@ module Epp #:nodoc:
 
     def initialize(http_response)
       @http_response = http_response
-      @msg = Epp::Message.from_xml(http_response.body)
+      @msg = Eppit::Message.from_xml(http_response.body)
       @object = nil
     end
   end
@@ -99,10 +99,10 @@ module Epp #:nodoc:
     end
 
     def contact_check(contacts)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.check = Epp::Message::Command::Check.new do |check|
-            check.contact_check = Epp::Message::Command::Check::ContactCheck.new do |contact_check|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.check = Eppit::Message::Command::Check.new do |check|
+            check.contact_check = Eppit::Message::Command::Check::ContactCheck.new do |contact_check|
               contact_check.ids = contacts
             end
           end
@@ -122,14 +122,14 @@ module Epp #:nodoc:
     end
 
     def contact_info(contact_id, opts = {})
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.info = Epp::Message::Command::Info.new do |info|
-            info.contact_info = Epp::Message::Command::Info::ContactInfo.new do |contact_info|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.info = Eppit::Message::Command::Info.new do |info|
+            info.contact_info = Eppit::Message::Command::Info::ContactInfo.new do |contact_info|
               contact_info.id = contact_id
 
               if opts[:auth_info_pw]
-                contact_info.auth_info = Epp::Message::ContactAuthInfo.new do |auth_info|
+                contact_info.auth_info = Eppit::Message::ContactAuthInfo.new do |auth_info|
                   auth_info.pw = opts[:auth_info_pw]
                 end
               end
@@ -179,17 +179,17 @@ module Epp #:nodoc:
 
       contact = Contact.new(contact) if contact.kind_of?(Hash)
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.create = Epp::Message::Command::Create.new do |create|
-            create.contact_create = Epp::Message::Command::Create::ContactCreate.new do |contact_create|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.create = Eppit::Message::Command::Create.new do |create|
+            create.contact_create = Eppit::Message::Command::Create::ContactCreate.new do |contact_create|
               contact_create.id = contact.nic_id
-              contact_create.postal_info = Epp::Message::Command::Create::ContactCreate::PostalInfo.new do |postal_info|
+              contact_create.postal_info = Eppit::Message::Command::Create::ContactCreate::PostalInfo.new do |postal_info|
                 postal_info.type = 'loc'
                 postal_info.name = contact.name
                 postal_info.org = contact.org
 
-                postal_info.addr = Epp::Message::Command::Create::ContactCreate::PostalInfo::Addr.new do |addr|
+                postal_info.addr = Eppit::Message::Command::Create::ContactCreate::PostalInfo::Addr.new do |addr|
                   addr.street = contact.street
                   addr.city = contact.city
                   addr.sp = contact.sp
@@ -202,18 +202,18 @@ module Epp #:nodoc:
               contact_create.voice_x = ''
               contact_create.fax = contact.fax
               contact_create.email = contact.email
-              contact_create.auth_info = Epp::Message::ContactAuthInfo.new do |auth_info|
+              contact_create.auth_info = Eppit::Message::ContactAuthInfo.new do |auth_info|
                 auth_info.pw = contact.auth_info_pw
               end
             end
           end
 
-          command.extension = Epp::Message::Command::Extension.new do |extension|
-            extension.extcon_create = Epp::Message::Command::Extension::ExtconCreate.new do |extcon_create|
+          command.extension = Eppit::Message::Command::Extension.new do |extension|
+            extension.extcon_create = Eppit::Message::Command::Extension::ExtconCreate.new do |extcon_create|
               extcon_create.consent_for_publishing = contact.consent_for_publishing
 
               if contact.registrant_entity_type
-                extcon_create.registrant =  Epp::Message::Command::Extension::ExtconCreate::Registrant.new do |registrant|
+                extcon_create.registrant =  Eppit::Message::Command::Extension::ExtconCreate::Registrant.new do |registrant|
                   registrant.nationality_code = contact.registrant_nationality_code
                   registrant.entity_type = contact.registrant_entity_type
                   registrant.reg_code = contact.registrant_reg_code
@@ -242,16 +242,16 @@ module Epp #:nodoc:
 
       diff = Contact::Diff.new(diff) if !diff.kind_of?(Contact::Diff)
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.update = Epp::Message::Command::Update.new do |update|
-            update.contact_update = Epp::Message::Command::Update::ContactUpdate.new do |contact_update|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.update = Eppit::Message::Command::Update.new do |update|
+            update.contact_update = Eppit::Message::Command::Update::ContactUpdate.new do |contact_update|
               contact_update.id = nic_id
 
               # Add
-              contact_update.add = Epp::Message::Command::Update::ContactUpdate::Add.new do |add|
+              contact_update.add = Eppit::Message::Command::Update::ContactUpdate::Add.new do |add|
                 add.statuses = diff.add ? diff.add.statuses.map { |x|
-                  Epp::Message::Command::Update::ContactUpdate::Status.new do |status|
+                  Eppit::Message::Command::Update::ContactUpdate::Status.new do |status|
                     status.s = x
                     status.lang = 'en'
                   end
@@ -260,14 +260,14 @@ module Epp #:nodoc:
               contact_update.add = nil if contact_update.add.to_xml.children.empty?
 
               # Chg
-              contact_update.chg =  Epp::Message::Command::Update::ContactUpdate::Chg.new do |chg|
+              contact_update.chg =  Eppit::Message::Command::Update::ContactUpdate::Chg.new do |chg|
 
-                chg.postal_info = Epp::Message::Command::Update::ContactUpdate::Chg::PostalInfo.new do |postal_info|
+                chg.postal_info = Eppit::Message::Command::Update::ContactUpdate::Chg::PostalInfo.new do |postal_info|
                   postal_info.type = 'loc'
                   postal_info.name = diff.chg.name
                   postal_info.org = diff.chg.org
 
-                  postal_info.addr = Epp::Message::Command::Update::ContactUpdate::Chg::PostalInfo::Addr.new do |addr|
+                  postal_info.addr = Eppit::Message::Command::Update::ContactUpdate::Chg::PostalInfo::Addr.new do |addr|
                     addr.street = diff.chg.street
                     addr.city = diff.chg.city
                     addr.sp = diff.chg.sp
@@ -286,9 +286,9 @@ module Epp #:nodoc:
               contact_update.chg = nil if contact_update.chg.to_xml.children.empty?
 
               # Rem
-              contact_update.rem =  Epp::Message::Command::Update::ContactUpdate::Rem.new do |rem|
+              contact_update.rem =  Eppit::Message::Command::Update::ContactUpdate::Rem.new do |rem|
                 rem.statuses = diff.rem ? diff.rem.statuses.map { |x|
-                  Epp::Message::Command::Update::ContactUpdate::Status.new do |status|
+                  Eppit::Message::Command::Update::ContactUpdate::Status.new do |status|
                     status.s = x
                     status.lang = 'en'
                   end
@@ -302,14 +302,14 @@ module Epp #:nodoc:
              diff.chg.registrant_entity_type ||
              diff.chg.registrant_nationality_code ||
              diff.chg.registrant_reg_code
-            command.extension = Epp::Message::Command::Extension.new do |extension|
-              extension.extcon_update = Epp::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
+            command.extension = Eppit::Message::Command::Extension.new do |extension|
+              extension.extcon_update = Eppit::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
                 extcon_update.consent_for_publishing = diff.chg.consent_for_publishing
 
                 if diff.chg.registrant_entity_type ||
                    diff.chg.registrant_nationality_code ||
                    diff.chg.registrant_reg_code
-                  extcon_update.registrant =  Epp::Message::Command::Extension::ExtconUpdate::Registrant.new do |registrant|
+                  extcon_update.registrant =  Eppit::Message::Command::Extension::ExtconUpdate::Registrant.new do |registrant|
                     registrant.nationality_code = diff.chg.registrant_nationality_code
                     registrant.entity_type = diff.chg.registrant_entity_type
                     registrant.reg_code = diff.chg.registrant_reg_code
@@ -329,10 +329,10 @@ module Epp #:nodoc:
     end
 
     def contact_delete(contact_id)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.delete = Epp::Message::Command::Delete.new do |delete|
-            delete.contact_delete = Epp::Message::Command::Delete::ContactDelete.new do |contact_delete|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.delete = Eppit::Message::Command::Delete.new do |delete|
+            delete.contact_delete = Eppit::Message::Command::Delete::ContactDelete.new do |contact_delete|
               contact_delete.id = contact_id
             end
           end
@@ -347,10 +347,10 @@ module Epp #:nodoc:
     end
 
     def domain_check(domains)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.check = Epp::Message::Command::Check.new do |check|
-            check.domain_check = Epp::Message::Command::Check::DomainCheck.new do |domain_check|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.check = Eppit::Message::Command::Check.new do |check|
+            check.domain_check = Eppit::Message::Command::Check::DomainCheck.new do |domain_check|
               domain_check.names = domains
             end
           end
@@ -370,15 +370,15 @@ module Epp #:nodoc:
     end
 
     def domain_info(domain_name, opts = {})
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.info = Epp::Message::Command::Info.new do |info|
-            info.domain_info = Epp::Message::Command::Info::DomainInfo.new do |domain_info|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.info = Eppit::Message::Command::Info.new do |info|
+            info.domain_info = Eppit::Message::Command::Info::DomainInfo.new do |domain_info|
               domain_info.name = domain_name
               domain_info.hosts = 'all'
 
               if opts[:auth_info_pw]
-                domain_info.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+                domain_info.auth_info = Eppit::Message::DomainAuthInfo.new do |auth_info|
                   auth_info.pw = opts[:auth_info_pw]
                 end
               end
@@ -455,15 +455,15 @@ module Epp #:nodoc:
 
       domain = Domain.new(domain) if !domain.kind_of?(Domain)
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.create = Epp::Message::Command::Create.new do |create|
-            create.domain_create = Epp::Message::Command::Create::DomainCreate.new do |domain_create|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.create = Eppit::Message::Command::Create.new do |create|
+            create.domain_create = Eppit::Message::Command::Create::DomainCreate.new do |domain_create|
               domain_create.name = domain.name
               domain_create.period = domain.period
 
               domain_create.ns = domain.nameservers.map { |ns|
-                Epp::Message::HostAttr.new do |host_attr|
+                Eppit::Message::HostAttr.new do |host_attr|
 
                   host_attr.host_name = ns.name
                   host_attr.host_addr = []
@@ -471,7 +471,7 @@ module Epp #:nodoc:
                   if ns.ipv4
                     ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
                     host_attr.host_addr += ipv4s.map { |addr|
-                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                      Eppit::Message::HostAttr::HostAddr.new do |host_addr|
                         host_addr.type = 'v4'
                         host_addr.address = addr
                       end
@@ -481,7 +481,7 @@ module Epp #:nodoc:
                   if ns.ipv6
                     ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
                     host_attr.host_addr += ipv6s.map { |addr|
-                      Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                      Eppit::Message::HostAttr::HostAddr.new do |host_addr|
                         host_addr.type = 'v6'
                         host_addr.address = addr
                       end
@@ -493,18 +493,18 @@ module Epp #:nodoc:
               domain_create.registrant = domain.registrant
 
               domain_create.contacts = domain.admin_contacts.map { |c|
-                Epp::Message::Contact.new do |contact|
+                Eppit::Message::Contact.new do |contact|
                   contact.type = 'admin'
                   contact.id = c
                 end
               } + domain.tech_contacts.map { |c|
-                Epp::Message::Contact.new do |contact|
+                Eppit::Message::Contact.new do |contact|
                   contact.type = 'tech'
                   contact.id = c
                 end
               }
 
-              domain_create.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+              domain_create.auth_info = Eppit::Message::DomainAuthInfo.new do |auth_info|
                 auth_info.pw = domain.auth_info_pw
               end
             end
@@ -531,10 +531,10 @@ module Epp #:nodoc:
 
       diff = Domain::Diff.new(diff) if !diff.kind_of?(Domain::Diff)
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.update = Epp::Message::Command::Update.new do |update|
-            update.domain_update = Epp::Message::Command::Update::DomainUpdate.new do |domain_update|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.update = Eppit::Message::Command::Update.new do |update|
+            update.domain_update = Eppit::Message::Command::Update::DomainUpdate.new do |domain_update|
               domain_update.name = domain_name
 
               # Add
@@ -545,22 +545,22 @@ module Epp #:nodoc:
                 diff.add.statuses ||= []
                 diff.add.nameservers ||= []
 
-                domain_update.add = Epp::Message::Command::Update::DomainUpdate::Add.new do |add|
+                domain_update.add = Eppit::Message::Command::Update::DomainUpdate::Add.new do |add|
 
                   add.contacts = diff.add.admin_contacts.map { |c|
-                    Epp::Message::Contact.new do |contact|
+                    Eppit::Message::Contact.new do |contact|
                       contact.type = 'admin'
                       contact.id = c
                     end
                   } + diff.add.tech_contacts.map { |c|
-                    Epp::Message::Contact.new do |contact|
+                    Eppit::Message::Contact.new do |contact|
                       contact.type = 'tech'
                       contact.id = c
                     end
                   }
 
                   add.statuses = diff.add.statuses.map { |x|
-                    Epp::Message::Command::Update::DomainUpdate::Status.new do |status|
+                    Eppit::Message::Command::Update::DomainUpdate::Status.new do |status|
                       status.s = x
                       status.lang = 'en'
                     end
@@ -570,7 +570,7 @@ module Epp #:nodoc:
                   add.ns = diff.add.nameservers.map { |ns|
                     ns = Domain::Nameserver.new(ns) if !ns.kind_of?(Domain::Nameserver)
 
-                    Epp::Message::HostAttr.new do |host_attr|
+                    Eppit::Message::HostAttr.new do |host_attr|
 
                       host_attr.host_name = ns.name
                       host_attr.host_addr = []
@@ -578,7 +578,7 @@ module Epp #:nodoc:
                       if ns.ipv4
                         ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
                         host_attr.host_addr += ipv4s.map { |addr|
-                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                          Eppit::Message::HostAttr::HostAddr.new do |host_addr|
                             host_addr.type = 'v4'
                             host_addr.address = addr
                           end
@@ -588,7 +588,7 @@ module Epp #:nodoc:
                       if ns.ipv6
                         ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
                         host_attr.host_addr += ipv6s.map { |addr|
-                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                          Eppit::Message::HostAttr::HostAddr.new do |host_addr|
                             host_addr.type = 'v6'
                             host_addr.address = addr
                           end
@@ -604,12 +604,12 @@ module Epp #:nodoc:
 
               # Chg
               if diff.chg
-                domain_update.chg =  Epp::Message::Command::Update::DomainUpdate::Chg.new do |chg|
+                domain_update.chg =  Eppit::Message::Command::Update::DomainUpdate::Chg.new do |chg|
 
                   chg.registrant = diff.chg.registrant
 
                   if diff.chg.auth_info_pw
-                    chg.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+                    chg.auth_info = Eppit::Message::DomainAuthInfo.new do |auth_info|
                       auth_info.pw = diff.chg.auth_info_pw
                     end
                   end
@@ -625,15 +625,15 @@ module Epp #:nodoc:
                 diff.rem.statuses ||= []
                 diff.rem.nameservers ||= []
 
-                domain_update.rem =  Epp::Message::Command::Update::DomainUpdate::Rem.new do |rem|
+                domain_update.rem =  Eppit::Message::Command::Update::DomainUpdate::Rem.new do |rem|
 
                  rem.contacts = diff.rem.admin_contacts.map { |c|
-                    Epp::Message::Contact.new do |contact|
+                    Eppit::Message::Contact.new do |contact|
                       contact.type = 'admin'
                       contact.id = c
                     end
                   } + diff.rem.tech_contacts.map { |c|
-                    Epp::Message::Contact.new do |contact|
+                    Eppit::Message::Contact.new do |contact|
                       contact.type = 'tech'
                       contact.id = c
                     end
@@ -641,7 +641,7 @@ module Epp #:nodoc:
                   rem.contacts = nil if rem.contacts.empty?
 
                   rem.statuses = diff.rem.statuses.map { |x|
-                    Epp::Message::Command::Update::DomainUpdate::Status.new do |status|
+                    Eppit::Message::Command::Update::DomainUpdate::Status.new do |status|
                       status.s = x
                       status.lang = 'en'
                     end
@@ -651,7 +651,7 @@ module Epp #:nodoc:
                   rem.ns = diff.rem.nameservers.map { |ns|
                     ns = Domain::Nameserver.new(ns) if !ns.kind_of?(Domain::Nameserver)
 
-                    Epp::Message::HostAttr.new do |host_attr|
+                    Eppit::Message::HostAttr.new do |host_attr|
 
                       host_attr.host_name = ns.name
                       host_attr.host_addr = []
@@ -659,7 +659,7 @@ module Epp #:nodoc:
                       if ns.ipv4
                         ipv4s = ns.ipv4.kind_of?(Array) ? ns.ipv4 : [ns.ipv4]
                         host_attr.host_addr = ipv4s.map { |addr|
-                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                          Eppit::Message::HostAttr::HostAddr.new do |host_addr|
                             host_addr.type = 'v4'
                             host_addr.address = addr
                           end
@@ -669,7 +669,7 @@ module Epp #:nodoc:
                       if ns.ipv6
                         ipv6s = ns.ipv6.kind_of?(Array) ? ns.ipv6 : [ns.ipv6]
                         host_attr.host_addr += ipv6s.map { |addr|
-                          Epp::Message::HostAttr::HostAddr.new do |host_addr|
+                          Eppit::Message::HostAttr::HostAddr.new do |host_addr|
                             host_addr.type = 'v6'
                             host_addr.address = addr
                           end
@@ -686,12 +686,12 @@ module Epp #:nodoc:
           end
 
 #          if diff.chg.consent_for_publishing
-#            command.extension = Epp::Message::Command::Extension.new do |extension|
-#              extension.extcon_update = Epp::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
+#            command.extension = Eppit::Message::Command::Extension.new do |extension|
+#              extension.extcon_update = Eppit::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
 #                extcon_update.consent_for_publishing = domain.consent_for_publishing
 #
 #                if domain.registrant_entity_type
-#                  extcon_update.registrant =  Epp::Message::Command::Extension::ExtconUpdate::Registrant.new do |registrant|
+#                  extcon_update.registrant =  Eppit::Message::Command::Extension::ExtconUpdate::Registrant.new do |registrant|
 #                    registrant.nationality_code = domain.registrant_nationality_code
 #                    registrant.entity_type = domain.registrant_entity_type
 #                    registrant.reg_code = domain.registrant_reg_code
@@ -711,10 +711,10 @@ module Epp #:nodoc:
     end
 
     def domain_delete(domain_name)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.delete = Epp::Message::Command::Delete.new do |delete|
-            delete.domain_delete = Epp::Message::Command::Delete::DomainDelete.new do |domain_delete|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.delete = Eppit::Message::Command::Delete.new do |delete|
+            delete.domain_delete = Eppit::Message::Command::Delete::DomainDelete.new do |domain_delete|
               domain_delete.name = domain_name
             end
           end
@@ -729,18 +729,18 @@ module Epp #:nodoc:
     end
 
     def domain_undelete(domain_name)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.update = Epp::Message::Command::Update.new do |update|
-            update.domain_update = Epp::Message::Command::Update::DomainUpdate.new do |domain_update|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.update = Eppit::Message::Command::Update.new do |update|
+            update.domain_update = Eppit::Message::Command::Update::DomainUpdate.new do |domain_update|
               domain_update.name = domain_name
 
-              domain_update.chg =  Epp::Message::Command::Update::DomainUpdate::Chg.new
+              domain_update.chg =  Eppit::Message::Command::Update::DomainUpdate::Chg.new
             end
           end
 
-          command.extension = Epp::Message::Command::Extension.new do |extension|
-            extension.rgp_update = Epp::Message::Command::Extension::RgpUpdate.new do |rgp_update|
+          command.extension = Eppit::Message::Command::Extension.new do |extension|
+            extension.rgp_update = Eppit::Message::Command::Extension::RgpUpdate.new do |rgp_update|
               rgp_update.restore_op = 'request'
             end
           end
@@ -755,15 +755,15 @@ module Epp #:nodoc:
     end
 
     def domain_transfer_query(domain_name, auth_pw)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.transfer = Epp::Message::Command::Transfer.new do |transfer|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.transfer = Eppit::Message::Command::Transfer.new do |transfer|
 
             transfer.op = 'query'
 
-            transfer.domain_transfer = Epp::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
+            transfer.domain_transfer = Eppit::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
               domain_transfer.name = domain_name
-              domain_transfer.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+              domain_transfer.auth_info = Eppit::Message::DomainAuthInfo.new do |auth_info|
                 auth_info.pw = auth_pw
               end
             end
@@ -788,25 +788,25 @@ module Epp #:nodoc:
 
     def domain_transfer_request(domain_name, auth_pw, trade = {})
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.transfer = Epp::Message::Command::Transfer.new do |transfer|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.transfer = Eppit::Message::Command::Transfer.new do |transfer|
 
             transfer.op = 'request'
 
-            transfer.domain_transfer = Epp::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
+            transfer.domain_transfer = Eppit::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
               domain_transfer.name = domain_name
-              domain_transfer.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+              domain_transfer.auth_info = Eppit::Message::DomainAuthInfo.new do |auth_info|
                 auth_info.pw = auth_pw
               end
             end
           end
 
           if !trade.empty?
-            command.extension = Epp::Message::Command::Extension.new do |extension|
-              extension.extdom_trade = Epp::Message::Command::Extension::ExtdomTrade.new do |extdom_trade|
+            command.extension = Eppit::Message::Command::Extension.new do |extension|
+              extension.extdom_trade = Eppit::Message::Command::Extension::ExtdomTrade.new do |extdom_trade|
                 extdom_trade.new_registrant = trade[:new_registrant]
-                extdom_trade.new_auth_info = Epp::Message::Command::Extension::ExtdomTrade::NewAuthInfo.new do |auth_info|
+                extdom_trade.new_auth_info = Eppit::Message::Command::Extension::ExtdomTrade::NewAuthInfo.new do |auth_info|
                   auth_info.pw = trade[:new_auth_info_pw]
                 end
               end
@@ -832,15 +832,15 @@ module Epp #:nodoc:
 
     def domain_transfer_cancel(domain_name, auth_pw)
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.transfer = Epp::Message::Command::Transfer.new do |transfer|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.transfer = Eppit::Message::Command::Transfer.new do |transfer|
 
             transfer.op = 'cancel'
 
-            transfer.domain_transfer = Epp::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
+            transfer.domain_transfer = Eppit::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
               domain_transfer.name = domain_name
-              domain_transfer.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+              domain_transfer.auth_info = Eppit::Message::DomainAuthInfo.new do |auth_info|
                 auth_info.pw = auth_pw
               end
             end
@@ -865,17 +865,17 @@ module Epp #:nodoc:
 
     def domain_transfer_approve(domain_name, opts = {})
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.transfer = Epp::Message::Command::Transfer.new do |transfer|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.transfer = Eppit::Message::Command::Transfer.new do |transfer|
 
             transfer.op = 'approve'
 
-            transfer.domain_transfer = Epp::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
+            transfer.domain_transfer = Eppit::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
               domain_transfer.name = domain_name
 
               if opts[:auth_info_pw]
-                domain_transfer.auth_info = Epp::Message::DomainAuthInfo.new do |auth_info|
+                domain_transfer.auth_info = Eppit::Message::DomainAuthInfo.new do |auth_info|
                   auth_info.pw = opts[:auth_info_pw]
                 end
               end
@@ -900,13 +900,13 @@ module Epp #:nodoc:
     end
 
     def domain_transfer_reject(domain_name)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.transfer = Epp::Message::Command::Transfer.new do |transfer|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.transfer = Eppit::Message::Command::Transfer.new do |transfer|
 
             transfer.op = 'reject'
 
-            transfer.domain_transfer = Epp::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
+            transfer.domain_transfer = Eppit::Message::Command::Transfer::DomainTransfer.new do |domain_transfer|
               domain_transfer.name = domain_name
             end
           end
@@ -929,9 +929,9 @@ module Epp #:nodoc:
     end
 
     def poll(opts = {})
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.poll = Epp::Message::Command::Poll.new do |poll|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.poll = Eppit::Message::Command::Poll.new do |poll|
             poll.op = 'req'
           end
 
@@ -962,9 +962,9 @@ module Epp #:nodoc:
     end
 
     def ack(message_id)
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.poll = Epp::Message::Command::Poll.new do |poll|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.poll = Eppit::Message::Command::Poll.new do |poll|
             poll.op = 'ack'
             poll.msg_id = message_id
           end
@@ -986,8 +986,8 @@ module Epp #:nodoc:
         return nil if @status == :helloed
       end
 
-      req = Epp::Message.new do |epp|
-        epp.hello = Epp::Message::Hello.new
+      req = Eppit::Message.new do |epp|
+        epp.hello = Eppit::Message::Hello.new
       end
 
       begin
@@ -1014,20 +1014,20 @@ module Epp #:nodoc:
         raise "Login in state #{@status} is unexpected"
       end
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.login = Epp::Message::Command::Login.new do |login|
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.login = Eppit::Message::Command::Login.new do |login|
             login.cl_id = @tag
             login.pw = @password
 
             login.new_pw = options[:newpw] if options[:newpw]
 
-            login.options = Epp::Message::Command::Login::Options.new do |opts|
+            login.options = Eppit::Message::Command::Login::Options.new do |opts|
               opts.version = @version
               opts.lang = @lang
             end
 
-            login.svcs = Epp::Message::Command::Login::Svcs.new do |svcs|
+            login.svcs = Eppit::Message::Command::Login::Svcs.new do |svcs|
               svcs.obj_uris = @services
               svcs.ext_uris = @extensions
             end
@@ -1047,7 +1047,7 @@ module Epp #:nodoc:
       end
 
       if resp.msg.response.result.code >= 2000
-        raise Epp::Session::ErrorResponse.new(resp.msg)
+        raise Eppit::Session::ErrorResponse.new(resp.msg)
       end
 
       # command successful, remember new password for this session
@@ -1067,9 +1067,9 @@ module Epp #:nodoc:
         raise "Logout not valid in state #{@status}" if @status != :logged_in
       end
 
-      req = Epp::Message.new do |epp|
-        epp.command = Epp::Message::Command.new do |command|
-          command.logout = Epp::Message::Command::Logout.new
+      req = Eppit::Message.new do |epp|
+        epp.command = Eppit::Message::Command.new do |command|
+          command.logout = Eppit::Message::Command::Logout.new
           command.cl_tr_id = generate_client_transaction_id
         end
       end
@@ -1086,7 +1086,7 @@ module Epp #:nodoc:
       save_store
 
       if resp.msg.response.result.code >= 2000
-        raise Epp::Session::ErrorResponse.new(resp.msg)
+        raise Eppit::Session::ErrorResponse.new(resp.msg)
       end
 
       return resp
@@ -1094,7 +1094,7 @@ module Epp #:nodoc:
 
     def send_request_raw(req)
 
-      if req.kind_of?(Epp::Message)
+      if req.kind_of?(Eppit::Message)
         # Incapsulate it in a Nokogiri document
         req2 = Nokogiri::XML::Document.new
         req2.encoding = 'UTF-8'
@@ -1143,7 +1143,7 @@ module Epp #:nodoc:
 
           begin
             login if @status == :helloed
-          rescue Epp::Session::ErrorResponse => e
+          rescue Eppit::Session::ErrorResponse => e
             if e.response_code == 2002 && e.reason_code == 4014
               @status = :logged_in
               save_store
@@ -1158,13 +1158,13 @@ module Epp #:nodoc:
         resp = send_request_raw(req)
 
         if resp.msg.response.result.code >= 2000
-          raise Epp::Session::ErrorResponse.new(resp.msg)
+          raise Eppit::Session::ErrorResponse.new(resp.msg)
         end
       rescue EOFError, Errno::EPIPE
         disconnect
         connect
         retry
-      rescue Epp::Session::ErrorResponse => e
+      rescue Eppit::Session::ErrorResponse => e
         if e.response_code == 2002 && e.reason_code == 4015
           @status = :new
           save_store

@@ -1,4 +1,4 @@
-module Epp
+module Eppit
 class Session
 
 class ErrorResponse < StandardError #:nodoc:

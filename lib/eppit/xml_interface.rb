@@ -1,7 +1,7 @@
 require 'active_support/core_ext'
 require 'roxml'
 
-module Epp
+module Eppit
   class MessageBase
     include ROXML
 
@@ -196,7 +196,7 @@ module Epp
           xml_namespace :extdom
           xml_name 'dnsErrorMsgData'
 
-          DnsReport = Epp::Message::DnsReport
+          DnsReport = Eppit::Message::DnsReport
 
           xml_accessor :response_id, :from => 'responseId'
           xml_accessor :validation_date, :from => 'validationDate', :as => Time
@@ -214,14 +214,14 @@ module Epp
             xml_namespace :extdom
             xml_name 'dnsWarningData'
 
-            DnsReport = Epp::Message::DnsReport
+            DnsReport = Eppit::Message::DnsReport
 
             xml_accessor :response_id, :from => 'responseId'
             xml_accessor :validation_date, :from => 'validationDate', :as => Time
             xml_accessor :report, :as => DnsReport
           end
 
-          ChgStatusMsgData = Epp::Message::Response::Extension::ChgStatusMsgData
+          ChgStatusMsgData = Eppit::Message::Response::Extension::ChgStatusMsgData
 
           xml_accessor :chg_status_msg_data, :from => 'chgStatusMsgData', :as => ChgStatusMsgData
           xml_accessor :dns_warning_data, :from => 'dnsWarningData', :as => DnsWarningData
@@ -405,7 +405,7 @@ module Epp
             xml_accessor :namespace, :from => :namespace
           end
 
-          class PostalInfo < Epp::Message::PostalInfo ; end
+          class PostalInfo < Eppit::Message::PostalInfo ; end
 
           xml_namespaces NS
           xml_namespace :contact
@@ -414,7 +414,7 @@ module Epp
           xml_accessor :id
           xml_accessor :roid
           xml_accessor :statuses, :from => 'contact:status', :as => [Status]
-          xml_accessor :postal_info, :from => 'contact:postalInfo', :as => Epp::Message::PostalInfo
+          xml_accessor :postal_info, :from => 'contact:postalInfo', :as => Eppit::Message::PostalInfo
           xml_accessor :voice, :from => 'contact:voice'
           xml_accessor :voice_x, :from => '@x', :in => 'contact:voice'
           xml_accessor :fax, :from => 'contact:fax'
@@ -459,7 +459,7 @@ module Epp
             xml_accessor :namespace, :from => :namespace
           end
 
-          class Contact < Epp::Message::Contact ; end
+          class Contact < Eppit::Message::Contact ; end
 
           xml_namespaces NS
           xml_namespace :domain
@@ -660,7 +660,7 @@ module Epp
           xml_name 'create'
           xml_namespace :contact
 
-          PostalInfo = Epp::Message::PostalInfo
+          PostalInfo = Eppit::Message::PostalInfo
 
           def initialize
             super
@@ -684,7 +684,7 @@ module Epp
           xml_name 'create'
           xml_namespace :domain
 
-          class Contact < Epp::Message::Contact ; end
+          class Contact < Eppit::Message::Contact ; end
 
           def initialize
             super
@@ -737,7 +737,7 @@ module Epp
             xml_namespace :contact
             xml_namespaces NS
 
-            PostalInfo = Epp::Message::PostalInfo
+            PostalInfo = Eppit::Message::PostalInfo
 
             xml_accessor :postal_info, :from => 'contact:postalInfo', :as => PostalInfo
             xml_accessor :voice, :from => 'contact:voice'
@@ -772,7 +772,7 @@ module Epp
           xml_name 'update'
           xml_namespace :domain
 
-          Contact = Epp::Message::Contact
+          Contact = Eppit::Message::Contact
 
           class Status < MessageBase
             xml_namespaces NS

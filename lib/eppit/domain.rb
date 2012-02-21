@@ -1,5 +1,5 @@
 
-module Epp
+module Eppit
 
 class Domain
 
