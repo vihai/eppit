@@ -23,7 +23,7 @@ class NicAccredSession
   end
 
   def start
-    @epp = Epp::Session.new(
+    @epp = Eppit::Session.new(
                 :uri => @uri,
                 :tag => @tag,
                 :password => @password,
@@ -40,7 +40,7 @@ class NicAccredSession
                 :ca_file => @ca_file,
                 :session_handling => :disable)
 
-    @epp2 = Epp::Session.new(
+    @epp2 = Eppit::Session.new(
                 :uri => @uri,
                 :tag => @tag2,
                 :password => @password2,
@@ -57,7 +57,7 @@ class NicAccredSession
                 :ca_file => @ca_file,
                 :session_handling => :disable)
 
-    @aa100=Epp::Contact.new
+    @aa100=Eppit::Contact.new
     @aa100.nic_id = @hprefix + 'AA100'
     @aa100.name = 'Arnoldo Asso'
     @aa100.org = 'Arnoldo Asso'
@@ -75,7 +75,7 @@ class NicAccredSession
     @aa100.registrant_entity_type = 1
     @aa100.registrant_reg_code = 'SSARLD69A01G702E'
 
-    @bb100=Epp::Contact.new
+    @bb100=Eppit::Contact.new
     @bb100.nic_id = @hprefix + 'BB100'
     @bb100.name = 'Carlo Verdi'
     @bb100.org = 'Banda Bassotti S.p.A.'
@@ -93,7 +93,7 @@ class NicAccredSession
     @bb100.registrant_entity_type = 2
     @bb100.registrant_reg_code = @devmode ? '02118311006' : '12345678910'
 
-    @ee100=Epp::Contact.new
+    @ee100=Eppit::Contact.new
     @ee100.nic_id = @hprefix + 'EE100'
     @ee100.name = 'Mario Lenzi'
     @ee100.org = 'Associazione Energia Economica'
@@ -111,7 +111,7 @@ class NicAccredSession
     @ee100.registrant_entity_type = 4
     @ee100.registrant_reg_code = '33300022200'
 
-    @cc001=Epp::Contact.new
+    @cc001=Eppit::Contact.new
     @cc001.nic_id = @hprefix + 'CC001'
     @cc001.name = 'Corrado Camel'
     @cc001.org = 'Minerali srl'
@@ -126,7 +126,7 @@ class NicAccredSession
     @cc001.auth_info_pw = 'Water-2008'
     @cc001.consent_for_publishing = 'true'
 
-    @dd001=Epp::Contact.new
+    @dd001=Eppit::Contact.new
     @dd001.nic_id = @hprefix + 'DD001'
     @dd001.name = 'Donald Duck'
     @dd001.org = 'Warehouse Ltd'
@@ -141,7 +141,7 @@ class NicAccredSession
     @dd001.auth_info_pw = 'Money-08'
     @dd001.consent_for_publishing = 'true'
 
-    @hh100=Epp::Contact.new
+    @hh100=Eppit::Contact.new
     @hh100.nic_id = @hprefix + 'HH100'
     @hh100.name = 'Mario Lenzi'
     @hh100.org = 'Associazione Energia Economica'
@@ -159,21 +159,21 @@ class NicAccredSession
     @hh100.registrant_entity_type = 4
     @hh100.registrant_reg_code = '33300022200'
 
-    @test1=Epp::Domain.new
+    @test1=Eppit::Domain.new
     @test1.name = @hprefix + 'test1.it'
     @test1.period = 1
-    @test1.nameservers = [ Epp::Domain::NameServer.new(:name => 'ns1.test1.it', :ipv4 => '192.168.10.100'),
-                           Epp::Domain::NameServer.new(:name => 'ns2.test1.it', :ipv4 => '192.168.11.200') ]
+    @test1.nameservers = [ Eppit::Domain::NameServer.new(:name => 'ns1.test1.it', :ipv4 => '192.168.10.100'),
+                           Eppit::Domain::NameServer.new(:name => 'ns2.test1.it', :ipv4 => '192.168.11.200') ]
     @test1.registrant = @hprefix + 'AA100'
     @test1.admin_contacts = [@hprefix + 'AA100']
     @test1.tech_contacts = [@hprefix + 'CC001']
     @test1.auth_info_pw = 'WWWtest-it'
 
-    @testone=Epp::Domain.new
+    @testone=Eppit::Domain.new
     @testone.name = @hprefix + 'test-one.it'
     @testone.period = 1
-    @testone.nameservers = [ Epp::Domain::NameServer.new(:name => 'ns1.foo.com'),
-                             Epp::Domain::NameServer.new(:name => 'ns2.bar.com') ]
+    @testone.nameservers = [ Eppit::Domain::NameServer.new(:name => 'ns1.foo.com'),
+                             Eppit::Domain::NameServer.new(:name => 'ns2.bar.com') ]
     @testone.registrant = @hprefix + 'BB100'
     @testone.admin_contacts = [@hprefix + 'DD001']
     @testone.tech_contacts = [@hprefix + 'DD001']
@@ -199,7 +199,7 @@ class NicAccredSession
 
     begin
       @epp.login
-    rescue Epp::Session::ErrorResponse => e
+    rescue Eppit::Session::ErrorResponse => e
       puts "Ignoring error #{e}"
     end
 
@@ -210,14 +210,14 @@ class NicAccredSession
     puts 'Logout'
     begin
       @epp.logout
-    rescue Epp::Session::ErrorResponse => e
+    rescue Eppit::Session::ErrorResponse => e
       puts "Ignoring error #{e}"
     end
 
     puts 'Login (with pw change)'
     begin
       @epp.login(:newpw => @new_password)
-    rescue Epp::Session::ErrorResponse => e
+    rescue Eppit::Session::ErrorResponse => e
       puts "Ignoring error #{e}"
     end
     :ok
@@ -317,7 +317,7 @@ class NicAccredSession
   def test13
     @test1.snapshot
     @test1.nameservers.reject! { |ns| ns.name == 'ns2.test1.it' }
-    @test1.nameservers << Epp::Domain::NameServer.new(:name => 'ns2.head1.com')
+    @test1.nameservers << Eppit::Domain::NameServer.new(:name => 'ns2.head1.com')
 
     puts 'domain_update(test1)'
     @epp.domain_update(@test1)

@@ -171,7 +171,7 @@ module Epp
           xml_accessor :xmlns, :from => '@xmlns'
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
-          xml_accessor :ex_date, :from => 'exDate', :as => DateTime
+          xml_accessor :ex_date, :from => 'exDate', :as => Time
         end
 
         class ChgStatusMsgData < MessageBase
@@ -199,7 +199,7 @@ module Epp
           DnsReport = Epp::Message::DnsReport
 
           xml_accessor :response_id, :from => 'responseId'
-          xml_accessor :validation_date, :from => 'validationDate', :as => DateTime
+          xml_accessor :validation_date, :from => 'validationDate', :as => Time
           xml_accessor :report, :as => DnsReport
         end
 
@@ -217,7 +217,7 @@ module Epp
             DnsReport = Epp::Message::DnsReport
 
             xml_accessor :response_id, :from => 'responseId'
-            xml_accessor :validation_date, :from => 'validationDate', :as => DateTime
+            xml_accessor :validation_date, :from => 'validationDate', :as => Time
             xml_accessor :report, :as => DnsReport
           end
 
@@ -333,7 +333,7 @@ module Epp
           xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name
-          xml_accessor :debit_date, :from => 'debitDate', :as => DateTime
+          xml_accessor :debit_date, :from => 'debitDate', :as => Time
           xml_accessor :amount, :as => BigDecimal
         end
 
@@ -421,9 +421,9 @@ module Epp
           xml_accessor :email, :from => 'contact:email'
           xml_accessor :cl_id, :from => 'contact:clID'
           xml_accessor :cr_id, :from => 'contact:crID'
-          xml_accessor :cr_date, :from => 'contact:crDate', :as => DateTime
+          xml_accessor :cr_date, :from => 'contact:crDate', :as => Time
           xml_accessor :up_id, :from => 'contact:upID'
-          xml_accessor :up_date, :from => 'contact:upDate', :as => DateTime
+          xml_accessor :up_date, :from => 'contact:upDate', :as => Time
 
 #          xml_accessor :auth_info, :from => 'authInfo', :as => DomainAuthInfo
         end
@@ -473,11 +473,11 @@ module Epp
           xml_accessor :ns, :as => [HostAttr], :in => 'ns'
           xml_accessor :cl_id, :from => 'clID'
           xml_accessor :cr_id, :from => 'crID'
-          xml_accessor :cr_date, :from => 'crDate', :as => DateTime
+          xml_accessor :cr_date, :from => 'crDate', :as => Time
           xml_accessor :up_id, :from => 'upID'
-          xml_accessor :up_date, :from => 'upDate', :as => DateTime
-          xml_accessor :ex_date, :from => 'exDate', :as => DateTime
-          xml_accessor :tr_date, :from => 'trDate', :as => DateTime
+          xml_accessor :up_date, :from => 'upDate', :as => Time
+          xml_accessor :ex_date, :from => 'exDate', :as => Time
+          xml_accessor :tr_date, :from => 'trDate', :as => Time
           xml_accessor :auth_info, :from => 'authInfo', :as => DomainAuthInfo
         end
 
@@ -489,9 +489,9 @@ module Epp
           xml_accessor :name
           xml_accessor :tr_status, :from => 'trStatus'
           xml_accessor :re_id, :from => 'reID'
-          xml_accessor :re_date, :from => 'reDate', :as => DateTime
+          xml_accessor :re_date, :from => 'reDate', :as => Time
           xml_accessor :ac_id, :from => 'acID'
-          xml_accessor :ac_date, :from => 'acDate', :as => DateTime
+          xml_accessor :ac_date, :from => 'acDate', :as => Time
         end
 
         class ContactCreData < MessageBase
@@ -500,7 +500,7 @@ module Epp
           xml_namespace :contact
 
           xml_accessor :id, :from => 'contact:id'
-          xml_accessor :cr_date, :from => 'contact:crDate', :as => DateTime
+          xml_accessor :cr_date, :from => 'contact:crDate', :as => Time
         end
 
         class DomainCreData < MessageBase
@@ -509,8 +509,8 @@ module Epp
           xml_namespace :domain
 
           xml_accessor :name, :from => 'domain:name'
-          xml_accessor :cr_date, :from => 'domain:crDate', :as => DateTime
-          xml_accessor :ex_date, :from => 'domain:exDate', :as => DateTime
+          xml_accessor :cr_date, :from => 'domain:crDate', :as => Time
+          xml_accessor :ex_date, :from => 'domain:exDate', :as => Time
         end
 
         xml_accessor :contact_chk_data, :as => ContactChkData, :from => 'contact:chkData'
@@ -526,7 +526,7 @@ module Epp
         xml_name 'msgq'
         xml_accessor :id, :from => '@id'
         xml_accessor :count, :from => '@count', :as => Integer
-        xml_accessor :qdate, :from => 'qDate', :as => DateTime
+        xml_accessor :qdate, :from => 'qDate', :as => Time
         xml_accessor :msges, :as => { :key => '@lang', :value => :content }, :from => 'msg'
       end
 

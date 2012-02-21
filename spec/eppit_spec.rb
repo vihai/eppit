@@ -3,7 +3,7 @@ require 'eppit'
 
 describe 'EppIt' do
   it 'can initialize' do
-    Epp::Session.new(
+    Eppit::Session.new(
          :uri => 'https://pub-test.nic.it:443',
          :tag => 'REG-REG',
          :password => 'password',

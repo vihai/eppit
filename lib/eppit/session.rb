@@ -142,7 +142,7 @@ module Epp #:nodoc:
 
       resp = send_request(req)
 
-      resp.object = OpenStruct.new(
+      resp.object = Contact.new(
         :nic_id => resp.msg.response.res_data.contact_inf_data.id,
         :roid => resp.msg.response.res_data.contact_inf_data.roid,
         :statuses => resp.msg.response.res_data.contact_inf_data.statuses.map { |x| x.s },
@@ -172,16 +172,12 @@ module Epp #:nodoc:
                                 resp.msg.response.extension.extcon_inf_data.registrant.reg_code : nil
       )
 
-      resp.object.snapshot
-
       resp
     end
 
     def contact_create(contact)
 
-      if contact.kind_of?(Hash)
-        contact = OpenStruct.new(contact)
-      end
+      contact = Contact.new(contact) if contact.kind_of?(Hash)
 
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
@@ -238,49 +234,13 @@ module Epp #:nodoc:
       resp
     end
 
-    def contact_update_make_diff(old_contact, new_contact)
-      diff = OpenStruct.new
-
-      diff.add = OpenStruct.new
-      diff.add.statuses = (new_contact.statuses - old_contact.statuses)
-
-      diff.rem = OpenStruct.new
-      diff.rem.statuses = (old_contact.statuses - new_contact.statuses)
-
-      diff.chg = OpenStruct.new
-      diff.chg.name = new_contact.name if old_contact.name != new_contact.name
-      diff.chg.org = new_contact.org if old_contact.org != new_contact.org
-
-      if old_contact.street != new_contact.street || old_contact.sp != new_contact.sp ||
-         old_contact.sp != new_contact.city || old_contact.pc != new_contact.pc || old_contact.cc != new_contact.cc
-        diff.chg.street = new_contact.street
-        diff.chg.sp = new_contact.sp
-        diff.chg.city = new_contact.city
-        diff.chg.pc = new_contact.pc
-        diff.chg.cc = new_contact.cc
-      end
-
-      diff.chg.voice = new_contact.voice if old_contact.voice != new_contact.voice
-      diff.chg.fax = new_contact.fax if old_contact.fax != new_contact.fax
-      diff.chg.email = new_contact.email if old_contact.email != new_contact.email
-      diff.chg.consent_for_publishing = new_contact.consent_for_publishing if old_contact.consent_for_publishing != new_contact.consent_for_publishing
-      diff.chg.registrant_nationality_code = new_contact.registrant_nationality_code if old_contact.registrant_nationality_code != new_contact.registrant_nationality_code
-      diff.chg.entity_type = new_contact.entity_type if old_contact.entity_type != new_contact.entity_type
-      diff.chg.reg_code = new_contact.reg_code if old_contact.reg_code != new_contact.reg_code
-
-      diff
-    end
-
     def contact_update_with_old(old_contact, new_contact)
-      contact_update(old_contact.nic_id, contact_update_make_diff(old_contact, new_contact))
+      contact_update(old_contact.nic_id, Contact::Diff.new(old_contact, new_contact))
     end
 
     def contact_update(nic_id, diff)
 
-      diff = OpenStruct.new(diff) if diff.kind_of?(Hash)
-      diff.add = OpenStruct.new(diff.add) if diff.add.kind_of?(Hash)
-      diff.chg = OpenStruct.new(diff.chg) if diff.chg.kind_of?(Hash)
-      diff.rem = OpenStruct.new(diff.rem) if diff.rem.kind_of?(Hash)
+      diff = Contact::Diff.new(diff) if !diff.kind_of?(Contact::Diff)
 
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
@@ -338,21 +298,21 @@ module Epp #:nodoc:
             end
           end
 
-          if diff.consent_for_publishing ||
-             diff.registrant_entity_type ||
-             diff.registrant_nationality_code ||
-             diff.registrant_reg_code
+          if diff.chg.consent_for_publishing ||
+             diff.chg.registrant_entity_type ||
+             diff.chg.registrant_nationality_code ||
+             diff.chg.registrant_reg_code
             command.extension = Epp::Message::Command::Extension.new do |extension|
               extension.extcon_update = Epp::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
-                extcon_update.consent_for_publishing = diff.consent_for_publishing
+                extcon_update.consent_for_publishing = diff.chg.consent_for_publishing
 
-                if diff.registrant_entity_type ||
-                   diff.registrant_nationality_code ||
-                   diff.registrant_reg_code
+                if diff.chg.registrant_entity_type ||
+                   diff.chg.registrant_nationality_code ||
+                   diff.chg.registrant_reg_code
                   extcon_update.registrant =  Epp::Message::Command::Extension::ExtconUpdate::Registrant.new do |registrant|
-                    registrant.nationality_code = diff.registrant_nationality_code
-                    registrant.entity_type = diff.registrant_entity_type
-                    registrant.reg_code = diff.registrant_reg_code
+                    registrant.nationality_code = diff.chg.registrant_nationality_code
+                    registrant.entity_type = diff.chg.registrant_entity_type
+                    registrant.reg_code = diff.chg.registrant_reg_code
                   end
                 end
               end
@@ -433,33 +393,36 @@ module Epp #:nodoc:
 
       epp_resp = resp.msg
 
-      domain = OpenStruct.new
-      domain.name = epp_resp.response.res_data.domain_inf_data.name
-      domain.roid = epp_resp.response.res_data.domain_inf_data.roid
+      domain = Domain.new(
+        :name => epp_resp.response.res_data.domain_inf_data.name,
+        :roid => epp_resp.response.res_data.domain_inf_data.roid,
 
-      domain.statuses = epp_resp.response.res_data.domain_inf_data.statuses.map { |x| "domain:#{x.status}" }
+        :statuses => epp_resp.response.res_data.domain_inf_data.statuses.map { |x| "domain:#{x.status}" },
 
-      domain.registrant = epp_resp.response.res_data.domain_inf_data.registrant
+        :registrant => epp_resp.response.res_data.domain_inf_data.registrant,
 
-      domain.admin_contacts = epp_resp.response.res_data.domain_inf_data.contacts.select { |x| x.type == 'admin' }.map { |x| x.id }
-      domain.tech_contacts = epp_resp.response.res_data.domain_inf_data.contacts.select { |x| x.type == 'tech' }.map { |x| x.id }
+        :admin_contacts => epp_resp.response.res_data.domain_inf_data.contacts.select { |x| x.type == 'admin' }.map { |x| x.id },
+        :tech_contacts => epp_resp.response.res_data.domain_inf_data.contacts.select { |x| x.type == 'tech' }.map { |x| x.id },
 
-      domain.nameservers = epp_resp.response.res_data.domain_inf_data.ns.map { |x|
-          OpenStruct.new(:name => x.host_name,
-                         :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
-                                              map { |host_addr| host_addr.address },
-                         :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
-                                              map { |host_addr| host_addr.address })
-      }
+        :nameservers => epp_resp.response.res_data.domain_inf_data.ns.map { |x|
+          Domain::Nameserver.new(
+            :name => x.host_name,
+            :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
+                                 map { |host_addr| host_addr.address },
+            :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
+                                 map { |host_addr| host_addr.address }
+          )
+        },
 
-      domain.cl_id = epp_resp.response.res_data.domain_inf_data.cl_id
-      domain.cr_id = epp_resp.response.res_data.domain_inf_data.cr_id
-      domain.cr_date = epp_resp.response.res_data.domain_inf_data.cr_date
-      domain.ex_date = epp_resp.response.res_data.domain_inf_data.ex_date
-      domain.up_id = epp_resp.response.res_data.domain_inf_data.up_id
-      domain.up_date = epp_resp.response.res_data.domain_inf_data.up_date
-      domain.tr_date = epp_resp.response.res_data.domain_inf_data.tr_date
-      domain.auth_info_pw = epp_resp.response.res_data.domain_inf_data.auth_info.pw
+        :cl_id => epp_resp.response.res_data.domain_inf_data.cl_id,
+        :cr_id => epp_resp.response.res_data.domain_inf_data.cr_id,
+        :cr_date => epp_resp.response.res_data.domain_inf_data.cr_date,
+        :ex_date => epp_resp.response.res_data.domain_inf_data.ex_date,
+        :up_id => epp_resp.response.res_data.domain_inf_data.up_id,
+        :up_date => epp_resp.response.res_data.domain_inf_data.up_date,
+        :tr_date => epp_resp.response.res_data.domain_inf_data.tr_date,
+        :auth_info_pw => epp_resp.response.res_data.domain_inf_data.auth_info.pw,
+      )
 
       if epp_resp.response.extension
         if epp_resp.response.extension.rgp_inf_data
@@ -472,16 +435,16 @@ module Epp #:nodoc:
 
         if epp_resp.response.extension.inf_ns_to_validate_data
           domain.nameservers_to_validate = epp_resp.response.extension.inf_ns_to_validate_data.ns_to_validate.map { |x|
-            OpenStruct.new(:name => x.host_name,
-                           :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
-                                                map { |host_addr| host_addr.address },
-                           :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
-                                                map { |host_addr| host_addr.address })
-            }
+            Domain::Nameserver.new(
+              :name => x.host_name,
+              :ipv4 => x.host_addr.select { |host_addr| host_addr.type == 'v4' }.
+                                   map { |host_addr| host_addr.address },
+              :ipv6 => x.host_addr.select { |host_addr| host_addr.type == 'v6' }.
+                                   map { |host_addr| host_addr.address }
+            )
+          }
         end
       end
-
-      domain.snapshot
 
       resp.object = domain
 
@@ -490,9 +453,7 @@ module Epp #:nodoc:
 
     def domain_create(domain)
 
-      if domain.kind_of?(Hash)
-        domain = OpenStruct.new(domain)
-      end
+      domain = Domain.new(domain) if !domain.kind_of?(Domain)
 
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
@@ -563,41 +524,12 @@ module Epp #:nodoc:
     end
 
     def domain_update_with_old(old_domain, new_domain)
-      domain_update(old_domain.name, domain_update_make_diff(old_domain, new_domain))
+      domain_update(old_domain.name, Domain::Diff.new(old_domain, new_domain))
     end
-
-    def domain_update_make_diff(old_domain, new_domain)
-      diff = OpenStruct.new
-
-      diff.add = OpenStruct.new
-      diff.add.admin_contacts = (new_domain.admin_contacts - old_domain.admin_contacts)
-      diff.add.tech_contacts = (new_domain.tech_contacts - old_domain.tech_contacts)
-      diff.add.statuses = (new_domain.statuses - old_domain.statuses)
-      diff.add.nameservers = (new_domain.nameservers.map { |x| x.to_h } - old_domain.nameservers.map { |x| x.to_h })
-
-      diff.chg = OpenStruct.new
-      diff.chg.registrant = new_domain.registrant if new_domain.registrant != old_domain.registrant
-      diff.chg.auth_info_pw = new_domain.auth_info_pw if new_domain.auth_info_pw != old_domain.auth_info_pw || new_domain.registrant != old_domain.registrant
-
-      diff.rem = OpenStruct.new
-      diff.rem.admin_contacts = (old_domain.admin_contacts - new_domain.admin_contacts)
-      diff.rem.tech_contacts = (old_domain.tech_contacts - new_domain.tech_contacts)
-      diff.rem.statuses = (old_domain.statuses - new_domain.statuses)
-      diff.rem.nameservers = (old_domain.nameservers.map { |x| x.to_h } - new_domain.nameservers.map { |x| x.to_h })
-
-#              domain_statuses = domain.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
-#              domain_orig_statuses = domain.orig.statuses.select { |x| x =~ /^domain:/ }.map { |x| x[7..-1] }
-
-      diff
-    end
-
 
     def domain_update(domain_name, diff)
 
-      diff = OpenStruct.new(diff) if diff.kind_of?(Hash)
-      diff.add = OpenStruct.new(diff.add) if diff.add.kind_of?(Hash)
-      diff.chg = OpenStruct.new(diff.chg) if diff.chg.kind_of?(Hash)
-      diff.rem = OpenStruct.new(diff.rem) if diff.rem.kind_of?(Hash)
+      diff = Domain::Diff.new(diff) if !diff.kind_of?(Domain::Diff)
 
       req = Epp::Message.new do |epp|
         epp.command = Epp::Message::Command.new do |command|
@@ -636,7 +568,7 @@ module Epp #:nodoc:
                   add.statuses = nil if add.statuses.empty?
 
                   add.ns = diff.add.nameservers.map { |ns|
-                    ns = OpenStruct.new(ns) if ns.kind_of?(Hash)
+                    ns = Domain::Nameserver.new(ns) if !ns.kind_of?(Domain::Nameserver)
 
                     Epp::Message::HostAttr.new do |host_attr|
 
@@ -717,7 +649,7 @@ module Epp #:nodoc:
                   rem.statuses = nil if rem.statuses.empty?
 
                   rem.ns = diff.rem.nameservers.map { |ns|
-                    ns = OpenStruct.new(ns) if ns.kind_of?(Hash)
+                    ns = Domain::Nameserver.new(ns) if !ns.kind_of?(Domain::Nameserver)
 
                     Epp::Message::HostAttr.new do |host_attr|
 
@@ -753,11 +685,11 @@ module Epp #:nodoc:
             end
           end
 
-          if diff.consent_for_publishing
-            command.extension = Epp::Message::Command::Extension.new do |extension|
-              extension.extcon_update = Epp::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
-                extcon_update.consent_for_publishing = domain.consent_for_publishing
-
+#          if diff.chg.consent_for_publishing
+#            command.extension = Epp::Message::Command::Extension.new do |extension|
+#              extension.extcon_update = Epp::Message::Command::Extension::ExtconUpdate.new do |extcon_update|
+#                extcon_update.consent_for_publishing = domain.consent_for_publishing
+#
 #                if domain.registrant_entity_type
 #                  extcon_update.registrant =  Epp::Message::Command::Extension::ExtconUpdate::Registrant.new do |registrant|
 #                    registrant.nationality_code = domain.registrant_nationality_code
@@ -765,9 +697,9 @@ module Epp #:nodoc:
 #                    registrant.reg_code = domain.registrant_reg_code
 #                  end
 #                end
-              end
-            end
-          end
+#              end
+#            end
+#          end
 
           command.cl_tr_id = generate_client_transaction_id
         end
@@ -843,11 +775,13 @@ module Epp #:nodoc:
 
       resp = send_request(req)
 
-      resp.object = { :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
-                      :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
-                      :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
-                      :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
-                      :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date }
+      resp.object = {
+        :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
+        :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
+        :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
+        :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
+        :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date
+      }
 
       resp
     end
@@ -885,11 +819,13 @@ module Epp #:nodoc:
 
       resp = send_request(req)
 
-      resp.object = { :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
-                      :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
-                      :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
-                      :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
-                      :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date }
+      resp.object = {
+        :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
+        :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
+        :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
+        :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
+        :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date
+      }
 
       resp
     end
@@ -916,11 +852,13 @@ module Epp #:nodoc:
 
       resp = send_request(req)
 
-      resp.object = { :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
-                      :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
-                      :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
-                      :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
-                      :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date }
+      resp.object = {
+        :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
+        :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
+        :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
+        :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
+        :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date
+      }
 
       resp
     end
@@ -950,11 +888,13 @@ module Epp #:nodoc:
 
       resp = send_request(req)
 
-      resp.object = { :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
-                      :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
-                      :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
-                      :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
-                      :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date }
+      resp.object = {
+        :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
+        :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
+        :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
+        :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
+        :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date
+      }
 
       resp
     end
@@ -977,11 +917,13 @@ module Epp #:nodoc:
 
       resp = send_request(req)
 
-      resp.object = { :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
-                      :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
-                      :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
-                      :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
-                      :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date }
+      resp.object = {
+        :tr_status => resp.msg.response.res_data.domain_trn_data.tr_status,
+        :re_id => resp.msg.response.res_data.domain_trn_data.re_id,
+        :re_date => resp.msg.response.res_data.domain_trn_data.re_date,
+        :ac_id => resp.msg.response.res_data.domain_trn_data.ac_id,
+        :ac_date => resp.msg.response.res_data.domain_trn_data.ac_date
+      }
 
       resp
     end
