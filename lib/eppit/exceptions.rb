@@ -1,12 +1,15 @@
 module Eppit
 class Session
 
-class ErrorResponse < StandardError #:nodoc:
+class ErrorResponse < StandardError
   attr_accessor :epp_message
   attr_accessor :response
   attr_accessor :response_code
   attr_accessor :reason
   attr_accessor :reason_code
+  attr_accessor :xml
+  attr_accessor :cl_tr_id
+  attr_accessor :sv_tr_id
 
   # Generic EPP exception. Accepts a response code and a message
   def initialize(epp_msg)
@@ -22,7 +25,7 @@ class ErrorResponse < StandardError #:nodoc:
   end
 end
 
-class TransportError < StandardError #:nodoc:
+class TransportError < StandardError
 end
 
 end
