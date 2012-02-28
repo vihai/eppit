@@ -26,7 +26,7 @@ class Contact
   attr_accessor :registrant_entity_type
   attr_accessor :registrant_reg_code
 
-  def initialize(opts)
+  def initialize(opts = {})
     opts.each { |k,v| send("#{k}=", v) }
   end
 
