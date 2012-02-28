@@ -203,7 +203,7 @@ module Eppit #:nodoc:
               contact_create.fax = contact.fax
               contact_create.email = contact.email
               contact_create.auth_info = Eppit::Message::ContactAuthInfo.new do |auth_info|
-                auth_info.pw = contact.auth_info_pw
+                auth_info.pw = 'NOTUSED' # contact.auth_info_pw
               end
             end
           end
