@@ -38,6 +38,8 @@ class Domain
     attr_accessor :ipv6
 
     def initialize(opts)
+      @ipv4 = []
+      @ipv6 = []
       opts.each { |k,v| send("#{k}=", v) }
     end
 
