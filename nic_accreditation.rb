@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'logger'
-require 'irb'
-require File.expand_path('../lib/eppit.rb', __FILE__)
+require 'pry'
+require File.expand_path('../lib/eppit/session.rb', __FILE__)
 
 class NicAccredSession
 
@@ -24,38 +24,46 @@ class NicAccredSession
 
   def start
     @epp = Eppit::Session.new(
-                :uri => @uri,
-                :tag => @tag,
-                :password => @password,
-                :logger => Logger.new(STDOUT),
-                :debug => true,
-                :services => ['urn:ietf:params:xml:ns:contact-1.0',
-                              'urn:ietf:params:xml:ns:domain-1.0'],
-                :extensions => ['http://www.nic.it/ITNIC-EPP/extepp-1.0',
-                                'http://www.nic.it/ITNIC-EPP/extcon-1.0',
-                                'http://www.nic.it/ITNIC-EPP/extdom-1.0',
-                                'urn:ietf:params:xml:ns:rgp-1.0'],
-                :store_file => 'tmp/accred.store.dat',
-                :xml_log_file => 'log/accred.log.xml',
-                :ca_file => @ca_file,
-                :session_handling => :disable)
+    :uri => @uri,
+    :tag => @tag,
+    :password => @password,
+    :logger => Logger.new(STDOUT),
+    :debug => true,
+    :services => [
+      'urn:ietf:params:xml:ns:contact-1.0',
+      'urn:ietf:params:xml:ns:domain-1.0'
+    ],
+    :extensions => [
+      'http://www.nic.it/ITNIC-EPP/extepp-1.0',
+      'http://www.nic.it/ITNIC-EPP/extcon-1.0',
+      'http://www.nic.it/ITNIC-EPP/extdom-1.0',
+      'urn:ietf:params:xml:ns:rgp-1.0'
+    ],
+    :store_file => 'tmp/accred.store.dat',
+    :xml_log_file => 'log/accred.log.xml',
+    :ca_file => @ca_file,
+    :session_handling => :disable)
 
     @epp2 = Eppit::Session.new(
-                :uri => @uri,
-                :tag => @tag2,
-                :password => @password2,
-                :logger => Logger.new(STDOUT),
-                :debug => true,
-                :services => ['urn:ietf:params:xml:ns:contact-1.0',
-                              'urn:ietf:params:xml:ns:domain-1.0'],
-                :extensions => ['http://www.nic.it/ITNIC-EPP/extepp-1.0',
-                                'http://www.nic.it/ITNIC-EPP/extcon-1.0',
-                                'http://www.nic.it/ITNIC-EPP/extdom-1.0',
-                                'urn:ietf:params:xml:ns:rgp-1.0'],
-                :store_file => 'tmp/accred1.store.dat',
-                :xml_log_file => 'log/accred1.log.xml',
-                :ca_file => @ca_file,
-                :session_handling => :disable)
+      :uri => @uri,
+      :tag => @tag2,
+      :password => @password2,
+      :logger => Logger.new(STDOUT),
+      :debug => true,
+      :services => [
+        'urn:ietf:params:xml:ns:contact-1.0',
+        'urn:ietf:params:xml:ns:domain-1.0'
+      ],
+      :extensions => [
+        'http://www.nic.it/ITNIC-EPP/extepp-1.0',
+        'http://www.nic.it/ITNIC-EPP/extcon-1.0',
+        'http://www.nic.it/ITNIC-EPP/extdom-1.0',
+        'urn:ietf:params:xml:ns:rgp-1.0'
+      ],
+      :store_file => 'tmp/accred1.store.dat',
+      :xml_log_file => 'log/accred1.log.xml',
+      :ca_file => @ca_file,
+      :session_handling => :disable)
 
     @aa100=Eppit::Contact.new
     @aa100.nic_id = @hprefix + 'AA100'
@@ -556,5 +564,5 @@ sess = NicAccredSession.new
 
 sess.print_usage
 
-IRB.start_session(sess)
+sess.pry
 
