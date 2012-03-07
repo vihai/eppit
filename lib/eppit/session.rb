@@ -1,5 +1,18 @@
+require 'eppit/version'
 
+# Gem and other dependencies
+require 'rexml/document'
+require 'nokogiri'
+require 'net/http'
+require 'curb'
+require 'uri'
 require 'uuidtools'
+require 'require_parameters'
+
+require 'eppit/domain'
+require 'eppit/contact'
+require 'eppit/exceptions'
+require 'eppit/xml_interface'
 
 module Eppit #:nodoc:
 
