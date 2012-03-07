@@ -40,6 +40,18 @@ class Domain
     def initialize(opts)
       opts.each { |k,v| send("#{k}=", v) }
     end
+
+    def ==(other)
+      name == other.name && ipv4 == other.ipv4 && ipv6 == other.ipv6
+    end
+
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      (name.to_s + ipv4.to_s + ipv6.to_s).hash
+    end
   end
 
   class Diff
