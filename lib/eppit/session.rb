@@ -995,7 +995,6 @@ module Eppit #:nodoc:
 #    private
 
     def hello
-
       if @session_handling == :auto
         return nil if @status == :helloed
       end
@@ -1020,7 +1019,6 @@ module Eppit #:nodoc:
 
     # Sends a standard login request to the EPP server.
     def login(options = {})
-
       if @session_handling == :auto
         return nil if @status == :logged_in
         hello if @status == :new
@@ -1060,15 +1058,18 @@ module Eppit #:nodoc:
         retry
       end
 
-      if resp.msg.response.result.code >= 2000
+      if resp.msg.response.result.code == 2002 && resp.msg.response.result.ext_value.reason_code == 4014
+        @status = :logged_in
+        save_store
+      elsif resp.msg.response.result.code >= 2000
         raise Eppit::Session::ErrorResponse.new(resp.msg)
+      else
+        # command successful, remember new password for this session
+        @password = options[:newpw] if options[:newpw]
+
+        @status = :logged_in
+        save_store
       end
-
-      # command successful, remember new password for this session
-      @password = options[:newpw] if options[:newpw]
-
-      @status = :logged_in
-      save_store
 
       resp
     end
@@ -1155,16 +1156,7 @@ module Eppit #:nodoc:
         if @session_handling == :auto
           hello if @status == :new
 
-          begin
-            login if @status == :helloed
-          rescue Eppit::Session::ErrorResponse => e
-            if e.response_code == 2002 && e.reason_code == 4014
-              @status = :logged_in
-              save_store
-            else
-              raise
-            end
-          end
+          login if @status == :helloed
         elsif @session_handling == :manual
           raise "send_request not valid in state #{@status}" if @status != :logged_in
         end
