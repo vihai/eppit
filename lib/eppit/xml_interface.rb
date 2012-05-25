@@ -334,7 +334,7 @@ module Eppit
           xml_name 'extValue'
 
           xml_accessor :reasons, :as => { :key => '@lang', :value => :content }, :from => 'reason'
-          xml_accessor :reason_code, :from => 'reasonCode', :in => 'xmlns:value', :as => Integer, :namespace => false
+          xml_accessor :reason_code, :from => 'extepp:reasonCode', :as => Integer, :in => 'value'
         end
 
         xml_name 'result'
