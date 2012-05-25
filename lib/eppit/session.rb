@@ -82,7 +82,8 @@ module Eppit #:nodoc:
       @ns = { 'xmlns' => 'urn:ietf:params:xml:ns:epp-1.0',
               'domain' => 'urn:ietf:params:xml:ns:domain-1.0',
               'rgp' => 'urn:ietf:params:xml:ns:rgp-1.0',
-              'extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-1.0' }
+              'extepp' => 'http://www.nic.it/ITNIC-EPP/extepp-2.0',
+              'extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0' }
 
       @http = Net::HTTP.new(@uri.host, @uri.port)
       if (@uri.scheme == 'https')

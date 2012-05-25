@@ -16,23 +16,31 @@ module Eppit
            'xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
            'domain' => 'urn:ietf:params:xml:ns:domain-1.0',
            'contact' => 'urn:ietf:params:xml:ns:contact-1.0',
-           'extepp' => 'http://www.nic.it/ITNIC-EPP/extepp-1.0',
+           'extepp' => 'http://www.nic.it/ITNIC-EPP/extepp-2.0',
            'extcon' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
-           'extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-1.0',
+           'extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
            'rgp' => 'urn:ietf:params:xml:ns:rgp-1.0' }
+
+    xml_name 'epp'
+
+    xml_accessor :xmlns_contact, :from => '@xmlns:contact'
+    xml_accessor :xmlns_domain, :from => '@xmlns:domain'
+    xml_accessor :xmlns_extepp, :from => '@xmlns:extepp'
+    xml_accessor :xmlns_extdom, :from => '@xmlns:extdom'
+    xml_accessor :xmlns_extcon, :from => '@xmlns:extcon'
+    xml_accessor :xmlns_rgp, :from => '@xmlns:rgp'
+    xml_accessor :xmlns, :from => '@xmlns'
 
     def initialize
       super
       @xmlns = 'urn:ietf:params:xml:ns:epp-1.0'
-      @xsi = 'http://www.w3.org/2001/XMLSchema-instance'
-      @schema_location = 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
+      @xmlns_contact = 'urn:ietf:params:xml:ns:domain-1.0'
+      @xmlns_domain = 'urn:ietf:params:xml:ns:contact-1.0'
+      @xmlns_extepp = 'http://www.nic.it/ITNIC-EPP/extepp-2.0'
+      @xmlns_extdom = 'http://www.nic.it/ITNIC-EPP/extcon-1.0'
+      @xmlns_extcon = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
+      @xmlns_rgp = 'urn:ietf:params:xml:ns:rgp-1.0'
     end
-
-    xml_namespace :xmlns
-    xml_name 'epp'
-    xml_accessor :xmlns, :from => '@xmlns'
-    xml_accessor :xsi, :from => '@xmlns:xsi'
-    xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
     # Constructs used in multiple places:
     class HostAttr < MessageBase
@@ -164,8 +172,8 @@ module Eppit
 
           def initialize
             super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extepp-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extepp-1.0 extepp-1.0.xsd'
+            @xmlns = 'http://www.nic.it/ITNIC-EPP/extepp-2.0'
+            @schema_location = 'http://www.nic.it/ITNIC-EPP/extepp-2.0 extepp-2.0.xsd'
           end
 
           xml_accessor :xmlns, :from => '@xmlns'
@@ -308,8 +316,8 @@ module Eppit
 
           def initialize
             super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extepp-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extepp-1.0 extepp-1.0.xsd'
+            @xmlns = 'http://www.nic.it/ITNIC-EPP/extepp-2.0'
+            @schema_location = 'http://www.nic.it/ITNIC-EPP/extepp-2.0 extepp-2.0.xsd'
           end
 
           xml_accessor :xmlns, :from => '@xmlns'
@@ -325,8 +333,8 @@ module Eppit
 
           def initialize
             super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extdom-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extdom-1.0 extdom-1.0.xsd'
+            @xmlns = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
+            @schema_location = 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
           end
 
           xml_accessor :xmlns, :from => '@xmlns'
@@ -972,8 +980,8 @@ module Eppit
 
           def initialize
             super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extdom-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extdom-1.0 extdom-1.0.xsd'
+            @xmlns = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
+            @schema_location = 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
           end
 
           xml_accessor :xmlns, :from => '@xmlns:extdom'
