@@ -23,8 +23,8 @@ module Eppit
 
     xml_name 'epp'
 
-    xml_accessor :xmlns_contact, :from => '@xmlns:contact'
     xml_accessor :xmlns_domain, :from => '@xmlns:domain'
+    xml_accessor :xmlns_contact, :from => '@xmlns:contact'
     xml_accessor :xmlns_extepp, :from => '@xmlns:extepp'
     xml_accessor :xmlns_extdom, :from => '@xmlns:extdom'
     xml_accessor :xmlns_extcon, :from => '@xmlns:extcon'
@@ -34,8 +34,8 @@ module Eppit
     def initialize
       super
       @xmlns = 'urn:ietf:params:xml:ns:epp-1.0'
-      @xmlns_contact = 'urn:ietf:params:xml:ns:domain-1.0'
-      @xmlns_domain = 'urn:ietf:params:xml:ns:contact-1.0'
+      @xmlns_domain = 'urn:ietf:params:xml:ns:domain-1.0'
+      @xmlns_contact = 'urn:ietf:params:xml:ns:contact-1.0'
       @xmlns_extepp = 'http://www.nic.it/ITNIC-EPP/extepp-2.0'
       @xmlns_extdom = 'http://www.nic.it/ITNIC-EPP/extcon-1.0'
       @xmlns_extcon = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
@@ -170,15 +170,6 @@ module Eppit
           xml_namespace :extepp
           xml_namespaces NS
 
-          def initialize
-            super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extepp-2.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extepp-2.0 extepp-2.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor :ex_date, :from => 'exDate', :as => Time
         end
 
@@ -273,15 +264,6 @@ module Eppit
             xml_accessor :reg_code, :from => 'extcon:regCode'
           end
 
-          def initialize
-            super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extcon-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:extcon'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor(:consent_for_publishing, :from => 'extcon:consentForPublishing') { |val| val == 'true' }
           xml_accessor :registrant, :from => 'extcon:registrant', :as => Registrant
         end
@@ -314,15 +296,6 @@ module Eppit
           xml_namespace :extepp
           xml_namespaces NS
 
-          def initialize
-            super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extepp-2.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extepp-2.0 extepp-2.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor :credit, :as => BigDecimal
         end
 
@@ -330,15 +303,6 @@ module Eppit
           xml_name 'delayedDebitAndRefundMsgData'
           xml_namespace :extdom
           xml_namespaces NS
-
-          def initialize
-            super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name
           xml_accessor :debit_date, :from => 'debitDate', :as => Time
@@ -589,30 +553,12 @@ module Eppit
           xml_name 'check'
           xml_namespace :contact
           xml_accessor :ids, :as => [], :from => 'contact:id'
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:contact-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:contact'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
         end
 
         class DomainCheck < MessageBase
           xml_name 'check'
           xml_namespace :domain
           xml_accessor :names, :as => [], :from => 'domain:name'
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:domain-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:domain'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
         end
 
         xml_accessor :contact_check, :as => ContactCheck, :from => 'contact:check'
@@ -628,15 +574,6 @@ module Eppit
           xml_namespace :contact
           xml_accessor :id, :from => 'contact:id'
           xml_accessor :auth_info, :from => 'contact:authInfo', :as => ContactAuthInfo
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:contact-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:contact'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
         end
 
         class DomainInfo < MessageBase
@@ -645,15 +582,6 @@ module Eppit
           xml_accessor :name, :from => 'domain:name'
           xml_accessor :hosts, :from => '@hosts', :in => 'domain:name'
           xml_accessor :auth_info, :from => 'domain:authInfo', :as => DomainAuthInfo
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:domain-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:domain'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
         end
 
         xml_accessor :contact_info, :as => ContactInfo, :from => 'contact:info'
@@ -669,15 +597,6 @@ module Eppit
           xml_namespace :contact
 
           PostalInfo = Eppit::Message::PostalInfo
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:contact-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:contact'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :id, :from => 'contact:id'
           xml_accessor :postal_info, :from => 'contact:postalInfo', :as => PostalInfo
@@ -696,14 +615,9 @@ module Eppit
 
           def initialize
             super
-            @xmlns = 'urn:ietf:params:xml:ns:domain-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
 
             @period_unit = 'y'
           end
-
-          xml_accessor :xmlns, :from => '@xmlns:domain'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name, :from => 'domain:name'
           xml_accessor :period, :from => 'domain:period', :as => Integer
@@ -761,15 +675,6 @@ module Eppit
             xml_accessor :statuses, :from => 'contact:status', :as => [Status]
           end
 
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:contact-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:contact'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor :id, :from => 'contact:id'
           xml_accessor :add, :from => 'contact:add', :as => Add
           xml_accessor :rem, :from => 'contact:rem', :as => Rem
@@ -819,14 +724,9 @@ module Eppit
 
           def initialize
             super
-            @xmlns = 'urn:ietf:params:xml:ns:domain-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
 
             @period_unit = 'y'
           end
-
-          xml_accessor :xmlns, :from => '@xmlns:domain'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name, :from => 'domain:name'
           xml_accessor :add, :from => 'domain:add', :as => Add
@@ -847,15 +747,6 @@ module Eppit
           xml_namespace :contact
           xml_namespaces NS
 
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:contact-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:contact'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor :id, :from => 'contact:id'
         end
 
@@ -863,15 +754,6 @@ module Eppit
           xml_name 'delete'
           xml_namespace :domain
           xml_namespaces NS
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:domain-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:domain'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name, :from => 'domain:name'
         end
@@ -888,15 +770,6 @@ module Eppit
           xml_name 'transfer'
           xml_namespace :domain
           xml_namespaces NS
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:domain-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:domain'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :name, :from => 'domain:name'
           xml_accessor :auth_info, :from => 'domain:authInfo', :as => DomainAuthInfo
@@ -924,15 +797,6 @@ module Eppit
             xml_accessor :reg_code, :from => 'extcon:regCode'
           end
 
-          def initialize
-            super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extcon-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:extcon'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor(:consent_for_publishing, :from => 'extcon:consentForPublishing') { |val| val == 'true' }
           xml_accessor :registrant, :from => 'extcon:registrant', :as => Registrant
         end
@@ -952,15 +816,6 @@ module Eppit
             xml_accessor :reg_code, :from => 'extcon:regCode'
           end
 
-          def initialize
-            super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extcon-1.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:extcon'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor(:consent_for_publishing, :from => 'extcon:consentForPublishing') { |val| val == 'true' }
           xml_accessor :registrant, :from => 'extcon:registrant', :as => Registrant
         end
@@ -978,15 +833,6 @@ module Eppit
             xml_accessor :pw, :from => 'extdom:pw'
           end
 
-          def initialize
-            super
-            @xmlns = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
-            @schema_location = 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:extdom'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
-
           xml_accessor :new_registrant, :from => 'extdom:newRegistrant', :in => 'extdom:transferTrade'
           xml_accessor :new_auth_info, :from => 'extdom:newAuthInfo', :as => NewAuthInfo, :in => 'extdom:transferTrade'
         end
@@ -995,15 +841,6 @@ module Eppit
           xml_name 'update'
           xml_namespace :rgp
           xml_namespaces NS
-
-          def initialize
-            super
-            @xmlns = 'urn:ietf:params:xml:ns:rgp-1.0'
-            @schema_location = 'urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd'
-          end
-
-          xml_accessor :xmlns, :from => '@xmlns:rgp'
-          xml_accessor :schema_location, :from => '@xsi:schemaLocation'
 
           xml_accessor :restore_op, :from => '@op', :in => 'rgp:restore'
         end
