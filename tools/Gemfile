@@ -1,0 +1,5 @@
+source "http://rubygems.org"
+source 'http://gems.developers.intercom.it/'
+
+gem 'pry'
+gem 'eppit', :path => '..'

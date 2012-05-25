@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 
+require 'bundler/setup'
+
 require 'logger'
 require 'pry'
-require File.expand_path('../lib/eppit/session.rb', __FILE__)
+
+require 'eppit/session'
 
 class NicAccredSession
 
@@ -19,7 +22,7 @@ class NicAccredSession
       :tag => @tag,
       :password => @password,
       :logger => Logger.new(STDOUT),
-      :debug => true,
+      :debug_http => true,
       :services => [
         'urn:ietf:params:xml:ns:contact-1.0',
         'urn:ietf:params:xml:ns:domain-1.0'
