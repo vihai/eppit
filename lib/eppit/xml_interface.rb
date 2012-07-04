@@ -299,6 +299,23 @@ module Eppit
           xml_accessor :credit, :as => BigDecimal
         end
 
+        class WrongNamespaceInfo < MessageBase
+          xml_name 'wrongNamespaceInfo'
+          xml_namespace :extepp
+          xml_namespaces NS
+
+          xml_accessor :wrong_namespace, :from => 'extepp:wrongNamespace'
+          xml_accessor :right_namespace, :from => 'extepp:rightNamespace'
+        end
+
+        class WrongNamespaceReminder < MessageBase
+          xml_name 'wrongNamespaceReminder'
+          xml_namespace :extepp
+          xml_namespaces NS
+
+          xml_accessor :wrong_namespace_info, :as => [WrongNamespaceInfo]
+        end
+
         class DelayedDebitAndRefundMsgData < MessageBase
           xml_name 'delayedDebitAndRefundMsgData'
           xml_namespace :extdom
@@ -319,6 +336,7 @@ module Eppit
         xml_accessor :rgp_inf_data, :as => RgpInfData, :from => 'rgp:infData'
         xml_accessor :inf_ns_to_validate_data, :as => InfNsToValidateData, :from => 'extdom:infNsToValidateData'
         xml_accessor :credit_msg_data, :as => CreditMsgData, :from => 'extepp:creditMsgData'
+        xml_accessor :wrong_namespace_reminder, :as => WrongNamespaceReminder, :from => 'extepp:wrongNamespaceReminder'
         xml_accessor :delayed_debit_and_refund_msg_data, :as => DelayedDebitAndRefundMsgData, :from => 'extdom:delayedDebitAndRefundMsgData'
       end
 
