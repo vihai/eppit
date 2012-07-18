@@ -192,11 +192,13 @@ module Eppit
 
               xml_accessor :status, :from => '@status'
               xml_accessor :name, :from => '@name'
+              xml_accessor :details, :from => 'extdom:detail', :as => [Detail]
             end
 
             xml_accessor :status, :from => '@status'
             xml_accessor :name, :from => '@name'
             xml_accessor :skipped, :from => '@skipped'
+            xml_accessor :nameservers, :from => 'extdom:nameserver', :as => [Nameserver]
           end
 
           class Query < MessageBase
