@@ -37,8 +37,8 @@ module Eppit
       @xmlns_domain = 'urn:ietf:params:xml:ns:domain-1.0'
       @xmlns_contact = 'urn:ietf:params:xml:ns:contact-1.0'
       @xmlns_extepp = 'http://www.nic.it/ITNIC-EPP/extepp-2.0'
-      @xmlns_extdom = 'http://www.nic.it/ITNIC-EPP/extcon-1.0'
-      @xmlns_extcon = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
+      @xmlns_extdom = 'http://www.nic.it/ITNIC-EPP/extdom-2.0'
+      @xmlns_extcon = 'http://www.nic.it/ITNIC-EPP/extcon-1.0'
       @xmlns_rgp = 'urn:ietf:params:xml:ns:rgp-1.0'
     end
 
@@ -109,48 +109,6 @@ module Eppit
       xml_accessor :addr, :from => 'contact:addr', :as => Addr
     end
 
-    class DnsReport < MessageBase
-      xml_namespaces NS
-      xml_namespace :extdom
-      xml_name 'report'
-
-      class Domain < MessageBase
-        xml_namespaces NS
-        xml_namespace :extdom
-        xml_name 'domain'
-
-        class Test < MessageBase
-          xml_namespaces NS
-          xml_namespace :extdom
-          xml_name 'test'
-
-          class Dns < MessageBase
-            xml_namespaces NS
-            xml_namespace :extdom
-            xml_name 'dns'
-
-            xml_accessor :name, :from => '@name'
-            xml_accessor :status, :from => '@status'
-            xml_accessor :dnsreport
-            xml_accessor :dnsreport_level, :from => '@level', :in => 'dnsreport'
-          end
-
-          xml_accessor :name, :from => '@name'
-          xml_accessor :status, :from => '@status'
-          xml_reader :dnses, :as => [Dns], :from => 'dns'
-        end
-
-        xml_accessor :name, :from => '@name'
-        xml_accessor :dnsreport, :cdata => true
-        xml_accessor :dnsreport_level, :from => '@level', :in => 'dnsreport'
-        xml_accessor :tests, :as => [Test]
-      end
-
-      xml_accessor :domain, :as => Domain
-      xml_accessor :test
-
-    end
-
     # Fixed position constructs
 
     class Hello < MessageBase
@@ -195,35 +153,79 @@ module Eppit
           xml_namespace :extdom
           xml_name 'dnsErrorMsgData'
 
-          DnsReport = Eppit::Message::DnsReport
+          class Nameserver < MessageBase
+            xml_namespaces NS
+            xml_namespace :extdom
+            xml_name 'nameserver'
 
-          xml_accessor :response_id, :from => 'responseId'
-          xml_accessor :validation_date, :from => 'validationDate', :as => Time
-          xml_accessor :report, :as => DnsReport
+            class Address < MessageBase
+              xml_namespaces NS
+              xml_namespace :extdom
+              xml_name 'address'
+
+              xml_accessor :type, :from => '@type'
+              xml_accessor :address, :from => :content
+            end
+
+            xml_accessor :name, :from => '@name'
+            xml_accessor :addresses, :from => 'extdom:address', :as => [Address]
+          end
+
+          class Test < MessageBase
+            xml_namespaces NS
+            xml_namespace :extdom
+            xml_name 'test'
+
+            class Nameserver < MessageBase
+              xml_namespaces NS
+              xml_namespace :extdom
+              xml_name 'nameserver'
+
+              class Detail < MessageBase
+                xml_namespaces NS
+                xml_namespace :extdom
+                xml_name 'detail'
+
+                xml_accessor :query_id, :from => '@queryId'
+                xml_accessor :text, :from => :content
+              end
+
+              xml_accessor :status, :from => '@status'
+              xml_accessor :name, :from => '@name'
+            end
+
+            xml_accessor :status, :from => '@status'
+            xml_accessor :name, :from => '@name'
+            xml_accessor :skipped, :from => '@skipped'
+          end
+
+          class Query < MessageBase
+            xml_namespaces NS
+            xml_namespace :extdom
+            xml_name 'query'
+
+            xml_accessor :query_id, :from => '@id'
+            xml_accessor :query_for, :from => 'extdom:queryFor'
+            xml_accessor :type, :from => 'extdom:type'
+            xml_accessor :destination, :from => 'extdom:destination'
+            xml_accessor :result, :from => 'extdom:result'
+          end
+
+          xml_accessor :version, :from => '@version'
+
+          xml_accessor :domain, :from => 'extdom:domain'
+          xml_accessor :status, :from => 'extdom:status'
+          xml_accessor :validation_id, :from => 'extdom:validationId'
+          xml_accessor :validation_date, :from => 'extdom:validationDate', :as => Time
+          xml_accessor :nameservers, :as => [Nameserver]
+          xml_accessor :tests, :as => [Test]
+          xml_accessor :queries, :as => [Query]
         end
 
         class DnsWarningMsgData < MessageBase
           xml_namespaces NS
           xml_namespace :extdom
           xml_name 'dnsWarningMsgData'
-
-          class DnsWarningData < MessageBase
-
-            xml_namespaces NS
-            xml_namespace :extdom
-            xml_name 'dnsWarningData'
-
-            DnsReport = Eppit::Message::DnsReport
-
-            xml_accessor :response_id, :from => 'responseId'
-            xml_accessor :validation_date, :from => 'validationDate', :as => Time
-            xml_accessor :report, :as => DnsReport
-          end
-
-          ChgStatusMsgData = Eppit::Message::Response::Extension::ChgStatusMsgData
-
-          xml_accessor :chg_status_msg_data, :from => 'chgStatusMsgData', :as => ChgStatusMsgData
-          xml_accessor :dns_warning_data, :from => 'dnsWarningData', :as => DnsWarningData
         end
 
         class SimpleMsgData < MessageBase
