@@ -228,6 +228,85 @@ module Eppit
           xml_namespaces NS
           xml_namespace :extdom
           xml_name 'dnsWarningMsgData'
+
+          class DnsWarningData < MessageBase
+            xml_namespaces NS
+            xml_namespace :extdom
+            xml_name 'dnsWarningData'
+
+            class Nameserver < MessageBase
+              xml_namespaces NS
+              xml_namespace :extdom
+              xml_name 'nameserver'
+
+              class Address < MessageBase
+                xml_namespaces NS
+                xml_namespace :extdom
+                xml_name 'address'
+
+                xml_accessor :type, :from => '@type'
+                xml_accessor :address, :from => :content
+              end
+
+              xml_accessor :name, :from => '@name'
+              xml_accessor :addresses, :from => 'extdom:address', :as => [Address]
+            end
+
+            class Test < MessageBase
+              xml_namespaces NS
+              xml_namespace :extdom
+              xml_name 'test'
+
+              class Nameserver < MessageBase
+                xml_namespaces NS
+                xml_namespace :extdom
+                xml_name 'nameserver'
+
+                class Detail < MessageBase
+                  xml_namespaces NS
+                  xml_namespace :extdom
+                  xml_name 'detail'
+
+                  xml_accessor :query_id, :from => '@queryId'
+                  xml_accessor :text, :from => :content
+                end
+
+                xml_accessor :status, :from => '@status'
+                xml_accessor :name, :from => '@name'
+                xml_accessor :details, :from => 'extdom:detail', :as => [Detail]
+              end
+
+              xml_accessor :status, :from => '@status'
+              xml_accessor :name, :from => '@name'
+              xml_accessor :skipped, :from => '@skipped'
+              xml_accessor :nameservers, :from => 'extdom:nameserver', :as => [Nameserver]
+            end
+
+            class Query < MessageBase
+              xml_namespaces NS
+              xml_namespace :extdom
+              xml_name 'query'
+
+              xml_accessor :query_id, :from => '@id'
+              xml_accessor :query_for, :from => 'extdom:queryFor'
+              xml_accessor :type, :from => 'extdom:type'
+              xml_accessor :destination, :from => 'extdom:destination'
+              xml_accessor :result, :from => 'extdom:result'
+            end
+
+            xml_accessor :version, :from => '@version'
+
+            xml_accessor :domain, :from => 'extdom:domain'
+            xml_accessor :status, :from => 'extdom:status'
+            xml_accessor :validation_id, :from => 'extdom:validationId'
+            xml_accessor :validation_date, :from => 'extdom:validationDate', :as => Time
+            xml_accessor :nameservers, :as => [Nameserver]
+            xml_accessor :tests, :as => [Test]
+            xml_accessor :queries, :as => [Query]
+          end
+
+          xml_accessor :chg_status_msg_data, :as => ChgStatusMsgData, :from => 'extdom:chgStatusMsgData'
+          xml_accessor :dns_warning_data, :as => DnsWarningData, :from => 'extdom:dnsWarningData'
         end
 
         class SimpleMsgData < MessageBase
